@@ -126,7 +126,7 @@ export function usePresence({
           .from('presence')
           .select('*')
           .eq('pr_id', prId)
-          .gte('last_heartbeat', new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Last 5 minutes
+          .gte('last_heartbeat', new Date(Date.now() - 30 * 1000).toISOString()); // Last 30 seconds
 
         if (error) {
           console.error('Error polling presence:', error);
@@ -199,6 +199,34 @@ export function usePresence({
           console.error('Error leaving session:', error);
         }
       })();
+    };
+  }, [currentSessionId, supabase]);
+
+  // Cleanup on browser close/refresh (beforeunload)
+  useEffect(() => {
+    if (!currentSessionId) return;
+
+    const handleBeforeUnload = () => {
+      // Use navigator.sendBeacon for reliable cleanup on page unload
+      // This works even when the page is closing
+      const cleanup = async () => {
+        try {
+          await supabase.from('presence').delete().eq('session_id', currentSessionId);
+          await supabase
+            .from('pr_sessions')
+            .update({ is_active: false })
+            .eq('id', currentSessionId);
+        } catch (error) {
+          // Silently fail - page is closing anyway
+        }
+      };
+      cleanup();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [currentSessionId, supabase]);
 
