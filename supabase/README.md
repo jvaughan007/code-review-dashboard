@@ -2,6 +2,19 @@
 
 This directory contains database migrations for the Code Review Dashboard real-time features.
 
+## Architecture Overview
+
+**Real-Time Implementation**: Database Polling + Optimistic UI
+
+Since Supabase Realtime (WebSockets) requires alpha access or a paid subscription, we're implementing real-time features using:
+
+- **Database Polling**: Efficient queries every 2-3 seconds
+- **Optimistic UI**: Instant updates with Zustand (feels real-time)
+- **Smart Caching**: Minimize database load
+- **Indexed Queries**: Fast lookups with proper indexes
+
+**Result**: Zero-cost solution that feels responsive while maintaining the portfolio project's free-tier requirement.
+
 ## Quick Start
 
 ### 1. Apply Database Migration
@@ -30,18 +43,7 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-### 2. Enable Realtime
-
-1. In Supabase dashboard, go to **Database** > **Replication**
-2. Enable Realtime for these tables:
-   - ✅ `pr_sessions`
-   - ✅ `presence`
-   - ✅ `cursors`
-   - ✅ `comments`
-
-3. Click **Save** for each table
-
-### 3. Verify Setup
+### 2. Verify Setup
 
 Run this query in SQL Editor to verify everything is set up:
 
@@ -139,22 +141,19 @@ SELECT * FROM presence WHERE pr_id = 'facebook/react/12345';
 DELETE FROM pr_sessions WHERE user_id = 'YOUR_USER_ID';
 ```
 
-### Test Realtime Subscriptions
+### Test Database Polling
 
 In your browser console (after deploying app):
 
 ```javascript
-// Subscribe to presence updates
-const subscription = supabase
-  .channel('presence-test')
-  .on(
-    'postgres_changes',
-    { event: '*', schema: 'public', table: 'presence' },
-    (payload) => console.log('Presence update:', payload)
-  )
-  .subscribe();
+// Test fetching presence data
+const { data, error } = await supabase
+  .from('presence')
+  .select('*')
+  .eq('pr_id', 'facebook/react/12345');
 
-// You should see real-time updates when presence data changes
+console.log('Active presence:', data);
+// You should see all users currently viewing the PR
 ```
 
 ---
@@ -177,10 +176,6 @@ const subscription = supabase
 - **Cause**: Migration didn't run successfully
 - **Fix**: Check Supabase SQL Editor for error messages, re-run migration
 
-### Realtime not working
-- **Cause**: Realtime not enabled on tables
-- **Fix**: Go to Database > Replication, enable for all 4 tables
-
 ### Stale presence data not cleaning up
 - **Cause**: Cleanup functions not being called
 - **Fix**: Set up a Supabase Edge Function or cron job to call cleanup functions every 5 minutes
@@ -192,8 +187,13 @@ const subscription = supabase
 After completing this setup:
 1. ✅ All tables created
 2. ✅ RLS policies active
-3. ✅ Realtime enabled
-4. ⏭️ Start building React components that use these tables
-5. ⏭️ Test real-time subscriptions in the app
+3. ⏭️ Start building React components that poll these tables
+4. ⏭️ Implement optimistic UI with Zustand
+5. ⏭️ Test database polling and performance
+
+**Architecture Note**: This implementation uses **database polling** instead of WebSockets (Supabase Realtime requires alpha access/paid plan). We achieve "real-time feel" through:
+- Optimistic UI updates (instant feedback)
+- Efficient polling every 2-3 seconds
+- Smart caching with Zustand
 
 See `WEEK2_PLAN.md` for development roadmap.

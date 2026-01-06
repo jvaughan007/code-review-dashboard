@@ -4,6 +4,7 @@ import {
 } from "@/lib/github/client";
 import { GitPullRequest, FileCode, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { PresenceIndicator } from "@/components/presence-indicator";
 
 interface PageProps {
   params: Promise<{
@@ -72,6 +73,11 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
                     <span>
                       {new Date(pullRequest.created_at).toLocaleDateString()}
                     </span>
+                  </div>
+
+                  {/* Real-time Presence Indicator */}
+                  <div className="mt-3">
+                    <PresenceIndicator prId={`${owner}/${repo}/${number}`} />
                   </div>
                 </div>
                 <img
@@ -151,15 +157,25 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Coming Soon: Real-time Collaboration */}
+            {/* Week 2: Real-time Collaboration Features */}
             <div className="mt-6 rounded-lg border border-primary/50 bg-primary/5 p-6">
               <h3 className="text-lg font-semibold mb-2">
-                🚀 Coming Soon: Real-time Collaboration
+                🚀 Week 2: Real-time Collaboration (In Progress)
               </h3>
-              <p className="text-sm text-muted-foreground">
-                Live cursors, presence indicators, and synchronized comments will
-                be available in Week 2 of development.
-              </p>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Presence indicators - See who's viewing this PR</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span>○</span>
+                  <span>Live cursors - See where teammates are in the code</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span>○</span>
+                  <span>Real-time comments - Synchronized comment threads</span>
+                </div>
+              </div>
             </div>
           </>
         )}
