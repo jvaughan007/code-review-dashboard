@@ -57,8 +57,8 @@ export function usePresence({
 
         if (!user || !isMounted) return;
 
-        // Create or update session
-        const { data: session, error: sessionError } = await supabase
+        // Create or update session (without .single() to avoid PGRST116 errors)
+        const { data: sessionData, error: sessionError } = await supabase
           .from('pr_sessions')
           .upsert(
             {
@@ -71,13 +71,27 @@ export function usePresence({
               onConflict: 'pr_id,user_id',
             }
           )
-          .select()
-          .single();
+          .select();
 
         if (sessionError) {
-          console.error('Error creating session:', sessionError);
+          console.error('Error creating session:', {
+            error: sessionError,
+            code: sessionError?.code,
+            message: sessionError?.message,
+            details: sessionError?.details,
+            hint: sessionError?.hint,
+            prId,
+            userId: user.id,
+          });
           return;
         }
+
+        if (!sessionData || sessionData.length === 0) {
+          console.error('No session returned but no error either', { prId, userId: user.id });
+          return;
+        }
+
+        const session = sessionData[0];
 
         if (!isMounted) return;
 
@@ -126,7 +140,8 @@ export function usePresence({
           .from('presence')
           .select('*')
           .eq('pr_id', prId)
-          .gte('last_heartbeat', new Date(Date.now() - 30 * 1000).toISOString()); // Last 30 seconds
+          .gte('last_heartbeat', new Date(Date.now() - 30 * 1000).toISOString()) // Last 30 seconds
+          .order('username', { ascending: true }); // Stable sort order prevents avatar shuffling
 
         if (error) {
           console.error('Error polling presence:', error);
