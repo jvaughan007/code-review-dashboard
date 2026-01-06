@@ -2,6 +2,13 @@
 
 > Real-time collaborative code review tool for GitHub pull requests
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/jvaughan007/code-review-dashboard)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
+
+**Live Repository**: [github.com/jvaughan007/code-review-dashboard](https://github.com/jvaughan007/code-review-dashboard)
+
 ## 🎯 Overview
 
 Code Review Dashboard enables teams to review GitHub pull requests together in real-time with live cursors, presence indicators, and synchronized comments. Built to solve the pain of asynchronous PR reviews across distributed teams.
@@ -113,9 +120,10 @@ MIT
 
 ## 🔗 Links
 
-- Portfolio Planning: `../portfolio-planning/`
-- Architecture Docs: Coming soon
-- Live Demo: Coming soon
+- **GitHub Repository**: [github.com/jvaughan007/code-review-dashboard](https://github.com/jvaughan007/code-review-dashboard)
+- **Portfolio Planning**: `../portfolio-planning/`
+- **Architecture Docs**: Coming soon
+- **Live Demo**: Coming soon (deploy to Vercel in Week 2)
 
 ---
 
