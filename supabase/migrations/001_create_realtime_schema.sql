@@ -1,14 +1,54 @@
 -- Real-Time Code Review Dashboard - Database Schema
 -- Migration: 001 - Create core real-time tables
+-- SAFE IDEMPOTENT VERSION: Can be run multiple times
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
+-- CLEANUP: Drop existing objects in correct order (dependencies first)
+-- ============================================================================
+
+-- Drop triggers first
+DROP TRIGGER IF EXISTS update_comments_updated_at ON comments;
+DROP TRIGGER IF EXISTS update_cursors_updated_at ON cursors;
+
+-- Drop policies (if tables exist)
+DROP POLICY IF EXISTS "Users can view all active sessions" ON pr_sessions;
+DROP POLICY IF EXISTS "Users can insert their own sessions" ON pr_sessions;
+DROP POLICY IF EXISTS "Users can update their own sessions" ON pr_sessions;
+
+DROP POLICY IF EXISTS "Users can view all presence data" ON presence;
+DROP POLICY IF EXISTS "Users can insert their own presence" ON presence;
+DROP POLICY IF EXISTS "Users can update their own presence" ON presence;
+DROP POLICY IF EXISTS "Users can delete their own presence" ON presence;
+
+DROP POLICY IF EXISTS "Users can view all cursors" ON cursors;
+DROP POLICY IF EXISTS "Users can insert their own cursors" ON cursors;
+DROP POLICY IF EXISTS "Users can update their own cursors" ON cursors;
+DROP POLICY IF EXISTS "Users can delete their own cursors" ON cursors;
+
+DROP POLICY IF EXISTS "Users can view all comments" ON comments;
+DROP POLICY IF EXISTS "Users can insert comments" ON comments;
+DROP POLICY IF EXISTS "Users can update their own comments" ON comments;
+DROP POLICY IF EXISTS "Users can delete their own comments" ON comments;
+
+-- Drop tables in dependency order (child tables first)
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS cursors CASCADE;
+DROP TABLE IF EXISTS presence CASCADE;
+DROP TABLE IF EXISTS pr_sessions CASCADE;
+
+-- Drop functions
+DROP FUNCTION IF EXISTS cleanup_stale_sessions() CASCADE;
+DROP FUNCTION IF EXISTS cleanup_stale_presence() CASCADE;
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+
+-- ============================================================================
 -- PR Sessions Table
 -- Tracks active viewing sessions for pull requests
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS pr_sessions (
+CREATE TABLE pr_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   pr_id TEXT NOT NULL, -- Format: "owner/repo/number"
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -16,10 +56,11 @@ CREATE TABLE IF NOT EXISTS pr_sessions (
   last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   is_active BOOLEAN NOT NULL DEFAULT true,
 
-  -- Indexes
+  -- Constraints
   CONSTRAINT pr_sessions_unique UNIQUE (pr_id, user_id)
 );
 
+-- Indexes for pr_sessions
 CREATE INDEX idx_pr_sessions_pr_id ON pr_sessions(pr_id);
 CREATE INDEX idx_pr_sessions_user_id ON pr_sessions(user_id);
 CREATE INDEX idx_pr_sessions_active ON pr_sessions(pr_id, is_active) WHERE is_active = true;
@@ -28,7 +69,7 @@ CREATE INDEX idx_pr_sessions_active ON pr_sessions(pr_id, is_active) WHERE is_ac
 -- Presence Table
 -- Real-time presence data for active users
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS presence (
+CREATE TABLE presence (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id UUID NOT NULL REFERENCES pr_sessions(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -43,6 +84,7 @@ CREATE TABLE IF NOT EXISTS presence (
   CONSTRAINT presence_unique UNIQUE (session_id)
 );
 
+-- Indexes for presence
 CREATE INDEX idx_presence_pr_id ON presence(pr_id);
 CREATE INDEX idx_presence_heartbeat ON presence(last_heartbeat);
 
@@ -50,7 +92,7 @@ CREATE INDEX idx_presence_heartbeat ON presence(last_heartbeat);
 -- Live Cursors Table
 -- Track cursor positions in real-time
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS cursors (
+CREATE TABLE cursors (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id UUID NOT NULL REFERENCES pr_sessions(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -65,6 +107,7 @@ CREATE TABLE IF NOT EXISTS cursors (
   CONSTRAINT cursors_unique UNIQUE (session_id, file_path)
 );
 
+-- Indexes for cursors
 CREATE INDEX idx_cursors_pr_file ON cursors(pr_id, file_path);
 CREATE INDEX idx_cursors_updated ON cursors(updated_at);
 
@@ -72,7 +115,7 @@ CREATE INDEX idx_cursors_updated ON cursors(updated_at);
 -- Comments Table
 -- Real-time synchronized comments on code lines
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS comments (
+CREATE TABLE comments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   pr_id TEXT NOT NULL,
   file_path TEXT NOT NULL,
@@ -87,6 +130,7 @@ CREATE TABLE IF NOT EXISTS comments (
   is_deleted BOOLEAN NOT NULL DEFAULT false
 );
 
+-- Indexes for comments
 CREATE INDEX idx_comments_pr_file_line ON comments(pr_id, file_path, line_number);
 CREATE INDEX idx_comments_user ON comments(user_id);
 CREATE INDEX idx_comments_parent ON comments(parent_id) WHERE parent_id IS NOT NULL;
@@ -175,6 +219,7 @@ CREATE POLICY "Users can delete their own comments"
 CREATE OR REPLACE FUNCTION cleanup_stale_sessions()
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   UPDATE pr_sessions
@@ -188,6 +233,7 @@ $$;
 CREATE OR REPLACE FUNCTION cleanup_stale_presence()
 RETURNS void
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
   DELETE FROM presence
