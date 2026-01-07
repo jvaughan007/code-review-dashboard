@@ -328,6 +328,19 @@
 
 ## Critical Decisions Log
 
+### Decision #6: Presence Cleanup Strategy (2026-01-06)
+- **Context**: beforeunload handler using async operations didn't work (browsers don't wait), cleanup took 23-27s via polling
+- **Decision**: Accept TTL-based polling cleanup (Option A), remove broken beforeunload code
+- **Rationale**: Current solution ALREADY exceeds requirements (23-27s vs 30s acceptable), zero security risk, industry standard pattern
+- **Impact**: 15-minute implementation, no Week 2 Day 3 delay, maintains simplicity
+- **Alternatives Considered**:
+  - Option B (navigator.sendBeacon): 8-12 hours, medium-HIGH security risk, 5.2/10 score - REJECTED
+  - Option C (database trigger + cron): 2-3 hours, <10s latency, 8.75/10 score - Future enhancement
+- **Decision Score**: Option A: 9.40/10 (unanimous)
+- **Consultation**: Prompt Engineer → Backend Architect + Frontend Developer (parallel) → Decision Council
+- **Specialists**: Both Backend Architect and Frontend Developer STRONGLY recommended against Option B
+- **Status**: Implemented (removed lines 220-246 from use-presence.ts, added documentation comment)
+
 ### Decision #5: Session Tracking Format (2026-01-06)
 - **Context**: User requested session tracking similar to kaimahi project
 - **Decision**: Adopt kaimahi SESSION_TRACKER.md format with 8 required sections

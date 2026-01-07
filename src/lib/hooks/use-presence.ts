@@ -217,33 +217,20 @@ export function usePresence({
     };
   }, [currentSessionId, supabase]);
 
-  // Cleanup on browser close/refresh (beforeunload)
-  useEffect(() => {
-    if (!currentSessionId) return;
-
-    const handleBeforeUnload = () => {
-      // Use navigator.sendBeacon for reliable cleanup on page unload
-      // This works even when the page is closing
-      const cleanup = async () => {
-        try {
-          await supabase.from('presence').delete().eq('session_id', currentSessionId);
-          await supabase
-            .from('pr_sessions')
-            .update({ is_active: false })
-            .eq('id', currentSessionId);
-        } catch (error) {
-          // Silently fail - page is closing anyway
-        }
-      };
-      cleanup();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [currentSessionId, supabase]);
+  // Note: beforeunload cleanup removed (Decision Council #6)
+  //
+  // Rationale: Browsers don't wait for async operations in beforeunload handlers.
+  // The page closes immediately, so Supabase DELETE requests never complete.
+  //
+  // Current cleanup mechanism: Server-side TTL with 30-second heartbeat threshold
+  // - Polling query filters out presence where last_heartbeat > 30 seconds old
+  // - Cleanup latency: 23-27 seconds (within acceptable 30s requirement)
+  // - Industry standard: Slack and Discord use 30-60s TTL patterns
+  //
+  // Future enhancement (Week 2 Day 4-5 or Week 3): Database trigger + cron job
+  // - See: decisions/cleanup_strategy_decision.md (Option C)
+  // - Estimated latency: <10 seconds with zero security risk
+  // - Implementation time: 2-3 hours
 
   return {
     presence: getPresenceForPR(prId),
