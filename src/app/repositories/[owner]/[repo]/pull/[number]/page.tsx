@@ -5,6 +5,7 @@ import {
 import { GitPullRequest, FileCode, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { PresenceIndicator } from "@/components/presence-indicator";
+import { PRDetailClient } from "@/components/pr-detail-client";
 
 interface PageProps {
   params: Promise<{
@@ -32,8 +33,12 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-6xl">
+    <>
+      {/* Live cursor tracking - wraps entire viewport */}
+      <PRDetailClient prId={`${owner}/${repo}/${number}`} />
+
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <Link
             href={`/repositories/${owner}/${repo}`}
@@ -167,8 +172,8 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
                   <span className="text-green-600">✓</span>
                   <span>Presence indicators - See who's viewing this PR</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <span>○</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
                   <span>Live cursors - See where teammates are in the code</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -181,5 +186,6 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
         )}
       </div>
     </div>
+    </>
   );
 }
