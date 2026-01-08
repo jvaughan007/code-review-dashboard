@@ -455,6 +455,102 @@ Before consulting any specialist, answer these questions:
 
 ---
 
+## 🔍 MULTI-DOMAIN TASK DETECTION
+
+**CRITICAL**: Many tasks span multiple technical domains. You MUST identify ALL domains and consult ALL relevant specialists.
+
+### How to Identify Multi-Domain Tasks
+
+Before consulting specialists, ask yourself:
+
+1. **Does this task touch multiple layers?**
+   - [ ] Frontend (UI, components, hooks, state)
+   - [ ] Backend (API, database, architecture)
+   - [ ] Database (schema, queries, RLS policies)
+   - [ ] External APIs (GitHub, third-party services)
+   - [ ] Infrastructure (deployment, caching, real-time)
+
+2. **Does this task involve architectural changes?**
+   - [ ] Changing communication patterns (polling → WebSocket)
+   - [ ] Changing data flow (client → server → database)
+   - [ ] Changing storage strategy (in-memory → database → cache)
+   - [ ] Changing authentication/authorization
+
+3. **Does this task affect multiple files in different directories?**
+   - [ ] Components (`src/components/`)
+   - [ ] Hooks (`src/lib/hooks/`)
+   - [ ] Database (`supabase/migrations/`)
+   - [ ] API routes (`src/app/api/`)
+   - [ ] Server components (`src/app/`)
+
+**If 2+ checkboxes are checked in ANY category, this is a MULTI-DOMAIN TASK.**
+
+### Multi-Domain Task Examples
+
+#### Example 1: "Rebuild live cursors with WebSocket"
+**Domains Involved**:
+- ✅ Frontend (cursor rendering, animation, visibility)
+- ✅ Backend (WebSocket architecture, real-time communication)
+- ✅ Database (Supabase Realtime setup, channel configuration)
+- ✅ Infrastructure (rate limits, connection management)
+
+**Required Specialists**:
+- Frontend Developer (client-side implementation)
+- Backend Architect (real-time architecture, WebSocket patterns)
+- Supabase Specialist (Realtime configuration, best practices)
+
+**❌ WRONG**: Only consult Frontend Developer
+**✅ CORRECT**: Consult all 3 specialists (parallel if independent)
+
+#### Example 2: "Add user authentication"
+**Domains Involved**:
+- ✅ Frontend (login UI, protected routes)
+- ✅ Backend (auth flow, session management)
+- ✅ Database (users table, RLS policies)
+- ✅ External APIs (GitHub OAuth)
+
+**Required Specialists**:
+- Frontend Developer (login components)
+- Backend Architect (auth architecture)
+- Supabase Specialist (Auth setup, RLS)
+- GitHub API Specialist (OAuth integration)
+- Security Engineer (token storage, security review)
+
+#### Example 3: "Fix cursor fading bug"
+**Domains Involved**:
+- ✅ Frontend (cursor component, animation logic)
+- ⚠️ Backend (might be caused by polling/throttling)
+
+**Initial Assessment**: Appears frontend-only, but could be architectural
+
+**Approach**:
+1. Consult Frontend Developer for diagnosis
+2. If diagnosis reveals backend/architectural cause → Consult Backend Architect
+3. If database queries involved → Consult Supabase Specialist
+
+**Key Learning**: Start with obvious domain, expand if diagnosis reveals more
+
+### Multi-Domain Consultation Rules
+
+**Rule 1: When in doubt, OVER-consult**
+- Better to consult unnecessary specialist than miss critical one
+- Specialists can defer if not relevant to their domain
+
+**Rule 2: Consult in parallel when independent**
+- Frontend + Backend + Database can work simultaneously
+- Saves time if they don't need to coordinate
+
+**Rule 3: Consult sequentially when dependent**
+- Backend Architect defines API contract → Frontend Developer implements UI
+- Database schema must exist → Backend queries can be written
+
+**Rule 4: Document ALL specialists consulted**
+- SESSION_TRACKER.md must list every specialist
+- Explain why each was consulted
+- Note if any specialist deferred (and why)
+
+---
+
 ## MANDATORY Consultation Workflows
 
 ### Workflow 1: Feature Implementation
@@ -526,20 +622,78 @@ Step 5: Implementation by Specialists
     └─→ Document decision in SESSION_TRACKER.md (Decision #X pattern)
 ```
 
+### Workflow 4: Multi-Domain Task (NEW)
+
+```
+User Request: "Rebuild live cursors with WebSocket" (example)
+    ↓
+Step 1: Identify All Domains
+    ↓ (Use Multi-Domain Task Detection checklist)
+    ├─→ Frontend: ✅ (cursor rendering, animation)
+    ├─→ Backend: ✅ (WebSocket architecture)
+    ├─→ Database: ✅ (Realtime configuration)
+    └─→ Infrastructure: ✅ (rate limits, connections)
+    ↓
+Step 2: List ALL Required Specialists
+    ├─→ Frontend Developer
+    ├─→ Backend Architect
+    ├─→ Supabase Specialist
+    └─→ [Others as identified]
+    ↓
+Step 3: Consult Prompt Engineer (optional but recommended)
+    ↓ (Prompt Engineer can validate specialist list, suggest sequence)
+    ↓
+Step 4: Consult ALL Specialists (parallel or sequential)
+    ↓ (Each specialist provides recommendations for their domain)
+    ↓
+Step 5: Synthesize Multi-Specialist Plan
+    ├─→ Identify integration points (where domains connect)
+    ├─→ Define interfaces/contracts between domains
+    ├─→ Sequence implementation (which domain first?)
+    └─→ Validate no conflicts between specialist recommendations
+    ↓
+Step 6: Decision Council (if conflicts or high-risk)
+    ↓ (Council resolves conflicts, evaluates trade-offs)
+    ↓
+Step 7: Implementation by ALL Specialists
+    ↓ (Each specialist implements their domain)
+    ↓
+Step 8: Integration Testing
+    ├─→ Test cross-domain interactions
+    ├─→ Verify interfaces work as designed
+    └─→ End-to-end validation
+    ↓
+Step 9: Documentation
+    └─→ SESSION_TRACKER.md logs ALL specialists consulted
+        └─→ Explain why each was needed
+        └─→ Document integration points
+        └─→ Note any specialist deferrals
+```
+
+**Critical Rule**: For multi-domain tasks, consulting only ONE specialist is a consultation policy violation, even if that specialist executes well.
+
 ---
 
 ## Pre-Implementation Checklist
 
 Before writing ANY implementation code, verify:
 
-- [ ] Consulted Prompt Engineer to optimize request
-- [ ] Identified all relevant specialists
-- [ ] Consulted specialists (documented which ones)
-- [ ] Specialists provided implementation plan
-- [ ] Interfaces/contracts agreed upon (if multi-specialist)
+- [ ] **Multi-Domain Detection**: Used checklist to identify ALL domains (frontend, backend, database, infrastructure, APIs)
+- [ ] **Specialist Identification**: Listed ALL required specialists for ALL identified domains
+- [ ] **No Missing Specialists**: Verified no domain was missed (when in doubt, over-consult)
+- [ ] Consulted Prompt Engineer to optimize request (optional for simple tasks)
+- [ ] **ALL Specialists Consulted**: Every identified specialist was consulted (documented which ones)
+- [ ] Specialists provided implementation plans for their domains
+- [ ] **Integration Points Defined**: If multi-domain, interfaces/contracts agreed upon between specialists
+- [ ] **Conflict Resolution**: If specialists disagreed, Decision Council resolved conflicts
 - [ ] No direct code writing without specialist approval
 
 **If ANY checkbox is unchecked, STOP and complete consultation first.**
+
+**Special Check for Multi-Domain Tasks**:
+- [ ] If task touches 2+ domains, did I consult specialists for EVERY domain?
+- [ ] Did I document WHY each specialist was consulted in SESSION_TRACKER.md?
+- [ ] Did I identify integration points where domains connect?
 
 ---
 
@@ -694,16 +848,43 @@ Me: *Consults Prompt Engineer first → Gets 3 options → User chooses Option A
 ### ❌ ANTI-PATTERN 3: Single Specialist for Multi-Domain Task
 
 ```
-# BAD
+# BAD (Simple Example)
 Task: "Add cursor position tracking to database"
 Me: *Only consults Frontend Developer (ignores database aspect)*
 
-# GOOD
+# GOOD (Simple Example)
 Task: "Add cursor position tracking to database"
 Me: *Consults Frontend Developer + Supabase Specialist (parallel)*
 ```
 
+**Real-World Case Study (Session #7-8)**:
+```
+# BAD (Actual Mistake)
+Task: "Rebuild live cursors with WebSocket"
+Domains: Frontend (cursors) + Backend (WebSocket) + Database (Realtime) + Infrastructure (rate limits)
+Me: *Only consulted Frontend Developer + Decision Council*
+Result: Missing Backend Architect + Supabase Specialist perspectives
+
+# GOOD (Correct Approach)
+Task: "Rebuild live cursors with WebSocket"
+Step 1: Identify domains using Multi-Domain Detection checklist
+    ├─→ Frontend: ✅ (cursor rendering, animation, visibility)
+    ├─→ Backend: ✅ (WebSocket architecture, real-time patterns)
+    ├─→ Database: ✅ (Supabase Realtime configuration)
+    └─→ Infrastructure: ✅ (rate limits, connection management)
+Step 2: Consult ALL specialists for ALL domains
+    ├─→ Frontend Developer (cursor implementation)
+    ├─→ Backend Architect (WebSocket architecture)
+    └─→ Supabase Specialist (Realtime setup)
+Step 3: Synthesize recommendations
+Step 4: Decision Council evaluates complete plan (all specialists consulted)
+```
+
 **Why Forbidden**: Multi-domain tasks require multiple specialists to ensure proper integration
+
+**Key Learning**: Even if one specialist (Frontend Developer) executes well, missing other specialists (Backend Architect, Supabase Specialist) means incomplete architectural analysis
+
+**Detection Rule**: If task involves architectural change (polling → WebSocket), ALWAYS consult Backend Architect, even if frontend work is obvious
 
 ### ❌ ANTI-PATTERN 4: Ignoring Specialist Recommendations
 
@@ -872,6 +1053,6 @@ When bugs occur, ask:
 
 ---
 
-**Last Updated**: 2026-01-08 (Session #7 - Added Specialist Selection Guide)
+**Last Updated**: 2026-01-08 (Session #8 - Added Multi-Domain Task Detection & Workflow)
 **Maintained By**: Claude Code (Sonnet 4.5) + User collaboration
-**Enforcement**: MANDATORY - violations result in bugs (proven in Sessions #4-6)
+**Enforcement**: MANDATORY - violations result in bugs (proven in Sessions #4-8)
