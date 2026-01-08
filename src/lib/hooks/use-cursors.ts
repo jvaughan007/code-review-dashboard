@@ -71,7 +71,8 @@ export function useCursors({
 
     async function pollCursors() {
       try {
-        const { data, error} = await supabase
+        // Fetch cursor positions
+        const { data: cursorsData, error: cursorsError } = await supabase
           .from('cursors')
           .select('*')
           .eq('pr_id', prId)
@@ -79,12 +80,41 @@ export function useCursors({
           .neq('session_id', sessionId) // Exclude own cursor
           .gte('updated_at', new Date(Date.now() - inactivityTimeout).toISOString()); // Last 3 seconds
 
-        if (error) {
-          console.error('Error polling cursors:', error);
+        if (cursorsError) {
+          console.error('Error polling cursors:', cursorsError);
           return;
         }
 
-        setCursors(prId, filePath, data as CursorPosition[]);
+        if (!cursorsData || cursorsData.length === 0) {
+          setCursors(prId, filePath, []);
+          return;
+        }
+
+        // Fetch presence data for these sessions to get username/avatar
+        const sessionIds = cursorsData.map((c) => c.session_id);
+        const { data: presenceData, error: presenceError } = await supabase
+          .from('presence')
+          .select('session_id, username, avatar_url')
+          .in('session_id', sessionIds);
+
+        if (presenceError) {
+          console.error('Error fetching presence for cursors:', presenceError);
+          // Still show cursors, just without usernames
+          setCursors(prId, filePath, cursorsData as CursorPosition[]);
+          return;
+        }
+
+        // Merge cursor data with presence data
+        const cursorsWithUsernames = cursorsData.map((cursor) => {
+          const presence = presenceData?.find((p) => p.session_id === cursor.session_id);
+          return {
+            ...cursor,
+            username: presence?.username || 'Anonymous',
+            avatar_url: presence?.avatar_url || null,
+          } as CursorPosition;
+        });
+
+        setCursors(prId, filePath, cursorsWithUsernames);
       } catch (error) {
         console.error('Error in cursor polling:', error);
       }
@@ -107,6 +137,25 @@ export function useCursors({
   const updateCursorPosition = useCallback(
     async (x: number, y: number, lineNumber: number | null = null) => {
       if (!enabled || !sessionId || !myColor) return;
+
+      // ALWAYS reset inactivity timer on any mouse movement (even if throttled)
+      // This prevents cursor from disappearing while user is actively moving
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      inactivityTimerRef.current = setTimeout(async () => {
+        // Remove cursor after inactivity timeout
+        try {
+          await supabase
+            .from('cursors')
+            .delete()
+            .eq('session_id', sessionId)
+            .eq('file_path', filePath);
+        } catch (error) {
+          console.error('Error removing cursor after inactivity:', error);
+        }
+      }, inactivityTimeout);
 
       const now = Date.now();
       const lastUpdate = lastUpdateRef.current;
@@ -180,24 +229,6 @@ export function useCursors({
           );
 
         pendingUpdateRef.current = null;
-
-        // Reset inactivity timer
-        if (inactivityTimerRef.current) {
-          clearTimeout(inactivityTimerRef.current);
-        }
-
-        inactivityTimerRef.current = setTimeout(async () => {
-          // Remove cursor after inactivity timeout
-          try {
-            await supabase
-              .from('cursors')
-              .delete()
-              .eq('session_id', sessionId)
-              .eq('file_path', filePath);
-          } catch (error) {
-            console.error('Error removing cursor after inactivity:', error);
-          }
-        }, inactivityTimeout);
       } catch (error) {
         console.error('Error updating cursor:', error);
       }

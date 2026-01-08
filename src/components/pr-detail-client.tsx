@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { usePresence } from '@/lib/hooks/use-presence';
 import { useCursors } from '@/lib/hooks/use-cursors';
 import { CursorsLayer } from '@/components/cursors-layer';
@@ -18,7 +18,7 @@ interface PRDetailClientProps {
  *
  * Architecture:
  * - Uses sessionId from presence store for cursor coordination
- * - Tracks mouse position on the entire viewport
+ * - Tracks mouse position on the entire document
  * - Renders cursors layer as absolute overlay
  *
  * Performance:
@@ -27,8 +27,6 @@ interface PRDetailClientProps {
  * - Proper cleanup on unmount
  */
 export function PRDetailClient({ prId }: PRDetailClientProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   // Get sessionId from presence hook
   const { sessionId } = usePresence({ prId, enabled: true });
 
@@ -40,10 +38,9 @@ export function PRDetailClient({ prId }: PRDetailClientProps) {
     enabled: true,
   });
 
-  // Track mouse movement on the container
+  // Track mouse movement on the entire document
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (!sessionId) return; // Don't track until we have a session
 
     function handleMouseMove(e: MouseEvent) {
       // Get coordinates relative to viewport (since cursors are rendered in viewport)
@@ -53,17 +50,17 @@ export function PRDetailClient({ prId }: PRDetailClientProps) {
       updateCursorPosition(x, y, null);
     }
 
-    container.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
 
     return () => {
-      container.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [updateCursorPosition]);
+  }, [updateCursorPosition, sessionId]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full">
-      {/* Live cursors overlay */}
+    <>
+      {/* Live cursors overlay - fixed positioning to cover viewport */}
       <CursorsLayer cursors={cursors} />
-    </div>
+    </>
   );
 }
