@@ -46,6 +46,216 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 
 ---
 
+## 🧭 SPECIALIST SELECTION GUIDE
+
+**CRITICAL**: Consulting the WRONG specialist is as bad as not consulting at all.
+
+### Decision Tree: Which Specialist Type?
+
+```
+Is this a request that needs action?
+├─ YES → Continue to next question
+└─ NO → Just answer the question (no specialist needed)
+
+What type of decision is this?
+├─ PROMPT OPTIMIZATION → Prompt Engineer
+│   ├─ "How should I phrase this request?"
+│   ├─ "Break down this complex request into steps"
+│   └─ "What's the best way to structure this prompt?"
+│
+├─ PROJECT MANAGEMENT → Project Shepherd
+│   ├─ "What task should we do next?"
+│   ├─ "Should we commit now or fix bugs first?"
+│   ├─ "How should we sequence these 3 tasks?"
+│   └─ "What's the timeline for this feature?"
+│
+├─ STRATEGIC DECISION → Decision Council
+│   ├─ "Should we use approach A or B?" (multiple valid options)
+│   ├─ "This decision has major trade-offs"
+│   ├─ "Specialists disagree - which is right?"
+│   └─ "Is this risky enough to need GO/NO-GO approval?"
+│
+└─ IMPLEMENTATION → Domain Specialists
+    ├─ Frontend Developer (UI components, React, hooks)
+    ├─ Backend Architect (APIs, database, architecture)
+    ├─ Next.js 16 Specialist (routing, caching, Server Components)
+    ├─ GitHub API Specialist (PR data, rate limits, Octokit)
+    └─ Supabase Specialist (migrations, RLS, queries)
+```
+
+### When to Use Each Specialist Type
+
+#### Prompt Engineer
+**Domain**: LLM interaction optimization, prompt structure, consultation workflow design
+
+**USE WHEN**:
+- Optimizing how to phrase a complex request
+- Breaking down a vague request into clear steps
+- Deciding which specialists to consult (and in what order)
+- Creating prompt templates for repeated tasks
+
+**DO NOT USE FOR**:
+- ❌ Project planning ("what should we do next?")
+- ❌ Strategic decisions ("should we use Redis or PostgreSQL?")
+- ❌ Technical implementation ("write this component")
+
+**Example (CORRECT)**:
+> User: "I want to optimize the performance of the cursor system but I'm not sure how to explain what I want"
+>
+> → Consult Prompt Engineer to structure the request clearly
+
+**Example (WRONG)**:
+> We have 3 tasks: fix bugs, test, and commit. Which should we do first?
+>
+> ❌ DO NOT consult Prompt Engineer (this is project management)
+> ✅ Consult Project Shepherd instead
+
+---
+
+#### Project Shepherd
+**Location**: `~/.claude/agents/project-management/project-shepherd.md`
+
+**Domain**: Task sequencing, timeline coordination, project workflow, resource allocation
+
+**USE WHEN**:
+- Deciding what task to do next (prioritization)
+- Sequencing multiple tasks (should we test or commit first?)
+- Coordinating specialist work (who should work when?)
+- Timeline questions (how long will this take?)
+- Risk vs. efficiency trade-offs in task ordering
+
+**DO NOT USE FOR**:
+- ❌ Prompt optimization ("how should I phrase this?")
+- ❌ Code implementation ("write this component")
+- ❌ High-stakes strategic decisions (use Decision Council)
+
+**Example (CORRECT)**:
+> We completed Session #7 implementation. We have 3 pending tasks:
+> 1. Fix cursor bugs
+> 2. Test with multiple windows
+> 3. Commit all changes
+>
+> What sequence is optimal?
+>
+> → Consult Project Shepherd for task prioritization
+
+**Example (WRONG)**:
+> Should we use WebSockets or polling for real-time features?
+>
+> ❌ DO NOT consult Project Shepherd (this is strategic/architectural)
+> ✅ Consult Decision Council + Backend Architect instead
+
+---
+
+#### Decision Council
+**Location**: `~/.claude/agents/decision-council/`
+
+**Domain**: Strategic decisions, trade-off analysis, multi-perspective evaluation, conflict resolution
+
+**USE WHEN**:
+- Multiple valid approaches exist (each with pros/cons)
+- High-risk architectural decisions (can't easily undo)
+- Specialists disagree on recommendations
+- GO/NO-GO decisions for major features
+- Resource allocation decisions (time, money, complexity)
+
+**DO NOT USE FOR**:
+- ❌ Task sequencing ("what should we do next?") → Use Project Shepherd
+- ❌ Simple technical questions ("how do I fetch PR data?") → Use domain specialist
+- ❌ Prompt optimization → Use Prompt Engineer
+
+**Example (CORRECT)**:
+> Should we use:
+> - Option A: WebSockets (real-time but costs money)
+> - Option B: Polling (free but higher latency)
+> - Option C: Server-Sent Events (middle ground)
+>
+> This affects architecture, user experience, and costs.
+>
+> → Consult Decision Council for multi-perspective trade-off analysis
+
+**Example (WRONG)**:
+> We just finished the agent ecosystem. Should we fix bugs next or commit first?
+>
+> ❌ DO NOT consult Decision Council (this is project management)
+> ✅ Consult Project Shepherd instead
+
+---
+
+#### Domain Specialists
+**Domain**: Technical implementation within their specific expertise area
+
+**USE WHEN**:
+- Writing code (components, functions, migrations)
+- Implementing features
+- Debugging technical issues
+- Answering "how do I..." questions in their domain
+
+**DO NOT USE FOR**:
+- ❌ Project prioritization → Use Project Shepherd
+- ❌ Strategic decisions → Use Decision Council
+- ❌ Prompt optimization → Use Prompt Engineer
+
+**Example (CORRECT)**:
+> Bug: Cursor fades away even when user is moving mouse
+>
+> → Consult Frontend Developer (React hooks, state management)
+
+**Example (WRONG)**:
+> Should we build Feature A or Feature B next?
+>
+> ❌ DO NOT consult Frontend Developer (project prioritization)
+> ✅ Consult Project Shepherd or Decision Council instead
+
+---
+
+### Quick Reference Table
+
+| Specialist Type | Use For | Don't Use For |
+|----------------|---------|---------------|
+| **Prompt Engineer** | Optimizing prompt text, consultation workflows | Project planning, strategic decisions, implementation |
+| **Project Shepherd** | Task sequencing, timelines, coordination | Strategic decisions, code implementation, prompt optimization |
+| **Decision Council** | Trade-offs, conflicts, high-risk choices | Task prioritization, simple technical questions |
+| **Domain Specialists** | Code implementation, technical debugging | Project management, strategic planning |
+
+---
+
+### Common Mistakes (Learn from Session #7)
+
+#### ❌ MISTAKE: Consulted Prompt Engineer for Project Prioritization
+
+**What Happened**: Asked Prompt Engineer "what should we do next: fix bugs, test, or commit?"
+
+**Why Wrong**: This is a project management question (task sequencing), not prompt optimization
+
+**Should Have Done**: Consulted Project Shepherd for task prioritization decision
+
+**Lesson**: Even if the decision involves agents, doesn't mean Prompt Engineer should decide. Match the decision TYPE to the specialist DOMAIN.
+
+---
+
+### Specialist Selection Checklist
+
+Before consulting any specialist, answer these questions:
+
+1. **What is the decision TYPE?**
+   - [ ] Prompt optimization → Prompt Engineer
+   - [ ] Project/task management → Project Shepherd
+   - [ ] Strategic/architectural → Decision Council
+   - [ ] Technical implementation → Domain Specialist
+
+2. **Does the decision match the specialist's DOMAIN?**
+   - [ ] YES → Proceed with consultation
+   - [ ] NO → Re-evaluate using decision tree above
+
+3. **Could this decision be handled by a more appropriate specialist?**
+   - [ ] NO → Proceed with consultation
+   - [ ] YES → Consult the correct specialist instead
+
+**If ANY checkbox indicates wrong specialist, STOP and reconsider.**
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -662,6 +872,6 @@ When bugs occur, ask:
 
 ---
 
-**Last Updated**: 2026-01-07 (Session #6)
+**Last Updated**: 2026-01-08 (Session #7 - Added Specialist Selection Guide)
 **Maintained By**: Claude Code (Sonnet 4.5) + User collaboration
 **Enforcement**: MANDATORY - violations result in bugs (proven in Sessions #4-6)

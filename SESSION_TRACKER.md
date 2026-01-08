@@ -32,8 +32,25 @@
   - SPECIALIST_CONSULTATION_CURSOR_BUGS.md (5KB)
   - SPECIALIST_RECOMMENDATIONS_CURSOR_BUGS.md (15KB)
 - ✅ Zero TypeScript errors maintained
-- ✅ All changes committed (2 commits: Session #7 docs + bug fixes)
+- ✅ All changes committed (3 commits: Session #7 docs + bug fixes + Specialist Selection Guide)
+- ✅ **Added Specialist Selection Guide to CLAUDE.md** (2026-01-08)
+  - Decision tree for choosing correct specialist type
+  - Clear domain boundaries (Prompt Engineer vs Project Shepherd vs Decision Council)
+  - Documented Session #7 mistake: Consulted Prompt Engineer for project prioritization
+  - Added checklist to prevent future specialist selection errors
 - ⏳ Pending: Multi-window testing with actual users
+
+### Lessons Learned This Session
+
+**Mistake: Consulting Wrong Specialist Type**
+- **What Happened**: Consulted Prompt Engineer to decide "what should we do next: fix bugs, test, or commit?"
+- **Why Wrong**: This is a project management decision (task sequencing), not prompt optimization
+- **Should Have Done**: Consulted Project Shepherd for task prioritization
+- **Root Cause**: Misinterpreted CLAUDE.md instruction "Prompt Engineer optimization for ALL complex requests" to mean "consult Prompt Engineer for all types of complex decisions"
+- **Fix**: Added comprehensive Specialist Selection Guide to CLAUDE.md with decision tree and domain boundaries
+- **Impact**: Even though Prompt Engineer executed well, consulting wrong specialist undermines entire consultation framework
+
+**Key Insight**: Specialist selection is as important as specialist consultation. Match decision TYPE to specialist DOMAIN.
 
 ---
 
