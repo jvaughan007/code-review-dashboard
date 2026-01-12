@@ -116,6 +116,8 @@ export function useComments({
           .insert({
             pr_id: prId,
             user_id: user.user.id,
+            username: optimisticComment.username,
+            avatar_url: optimisticComment.avatar_url,
             body,
             parent_comment_id: parentCommentId,
           })

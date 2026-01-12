@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pr_id TEXT NOT NULL,                        -- Format: "owner/repo/number"
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL,                     -- Denormalized for performance
+  avatar_url TEXT,                            -- Denormalized for performance
   parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,  -- NULL for top-level comments
   body TEXT NOT NULL CHECK (char_length(body) > 0 AND char_length(body) <= 10000),
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
