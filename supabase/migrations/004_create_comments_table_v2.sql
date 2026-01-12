@@ -24,13 +24,10 @@ CREATE TABLE comments (
   parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,  -- NULL for top-level comments
   body TEXT NOT NULL CHECK (char_length(body) > 0 AND char_length(body) <= 10000),
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 
-  -- Constraint: Max threading depth of 3 (prevents infinite nesting)
-  CONSTRAINT comments_max_depth CHECK (
-    parent_comment_id IS NULL OR
-    (SELECT COUNT(*) FROM comments c2 WHERE c2.id = parent_comment_id) < 3
-  )
+  -- NOTE: Max threading depth enforced in application code (see CommentItem.tsx)
+  -- PostgreSQL CHECK constraints don't support subqueries
 );
 
 -- ==================================================
