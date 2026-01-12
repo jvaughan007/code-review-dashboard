@@ -11,7 +11,7 @@ interface CommentItemProps {
   currentUserId?: string;
   onReply: (body: string, parentCommentId: string) => Promise<void>;
   onDelete: (commentId: string) => Promise<void>;
-  replies?: Comment[];
+  getReplies: (commentId: string) => Comment[];
   depth?: number;
   maxDepth?: number;
 }
@@ -34,7 +34,7 @@ export function CommentItem({
   currentUserId,
   onReply,
   onDelete,
-  replies = [],
+  getReplies,
   depth = 0,
   maxDepth = 3,
 }: CommentItemProps) {
@@ -176,16 +176,16 @@ export function CommentItem({
       )}
 
       {/* Nested replies */}
-      {replies.length > 0 && (
+      {getReplies(comment.id).length > 0 && (
         <div className="mt-3 ml-11 space-y-3">
-          {replies.map((reply) => (
+          {getReplies(comment.id).map((reply) => (
             <CommentItem
               key={reply.id}
               comment={reply}
               currentUserId={currentUserId}
               onReply={onReply}
               onDelete={onDelete}
-              replies={[]} // Replies are already structured by parent
+              getReplies={getReplies} // Pass down getReplies for recursive threading
               depth={depth + 1}
               maxDepth={maxDepth}
             />

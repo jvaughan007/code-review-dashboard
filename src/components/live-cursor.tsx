@@ -79,12 +79,14 @@ export const LiveCursor = memo<LiveCursorProps>(({ cursor }) => {
   const updatedAt = new Date(cursor.updated_at).getTime();
   const age = now - updatedAt;
 
-  // Fade out starts at 2.5s (before 3s cleanup)
-  const shouldFadeOut = age > 2500;
-  const opacity = shouldFadeOut ? Math.max(0, 1 - (age - 2500) / 500) : 1;
+  // Fade out starts at 8s (before 10s cleanup) - more gradual
+  const fadeStart = 8000;
+  const fadeEnd = 10000;
+  const shouldFadeOut = age > fadeStart;
+  const opacity = shouldFadeOut ? Math.max(0, 1 - (age - fadeStart) / (fadeEnd - fadeStart)) : 1;
 
-  // Don't render stale cursors (>3s old)
-  if (age > 3000) return null;
+  // Don't render stale cursors (>10s old)
+  if (age > fadeEnd) return null;
 
   return (
     <motion.div

@@ -31,7 +31,7 @@ interface UseCursorsOptions {
   pollingInterval?: number; // ms (default: 2000)
   throttleDelay?: number; // ms (default: 200 = 5 updates/sec)
   spatialThreshold?: number; // px (default: 10 = require 10px movement)
-  inactivityTimeout?: number; // ms (default: 3000 = 3 seconds)
+  inactivityTimeout?: number; // ms (default: 10000 = 10 seconds)
 }
 
 export function useCursors({
@@ -42,7 +42,7 @@ export function useCursors({
   pollingInterval = 2000,
   throttleDelay = 200,
   spatialThreshold = 10,
-  inactivityTimeout = 3000,
+  inactivityTimeout = 10000,
 }: UseCursorsOptions) {
   const supabase = createClient();
   const { setCursors, updateCursor, getCursorsForFile, myColor, setMyColor } =
@@ -78,7 +78,7 @@ export function useCursors({
           .eq('pr_id', prId)
           .eq('file_path', filePath)
           .neq('session_id', sessionId) // Exclude own cursor
-          .gte('updated_at', new Date(Date.now() - inactivityTimeout).toISOString()); // Last 3 seconds
+          .gte('updated_at', new Date(Date.now() - inactivityTimeout).toISOString()); // Recent cursors only
 
         if (cursorsError) {
           console.error('Error polling cursors:', cursorsError);

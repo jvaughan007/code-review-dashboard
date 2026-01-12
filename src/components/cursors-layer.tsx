@@ -34,11 +34,11 @@ interface CursorsLayerProps {
  * - Parent container should have position: relative
  */
 export const CursorsLayer = memo<CursorsLayerProps>(({ cursors }) => {
-  // Filter out stale cursors (>3s old)
+  // Filter out stale cursors (>10s old)
   const now = Date.now();
   const activeCursors = cursors.filter((cursor) => {
     const age = now - new Date(cursor.updated_at).getTime();
-    return age <= 3000;
+    return age <= 10000;
   });
 
   return (

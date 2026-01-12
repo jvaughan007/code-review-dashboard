@@ -69,10 +69,6 @@ export function CommentThread({ prId }: CommentThreadProps) {
   // Organize comments by threading structure
   const topLevelComments = comments.filter((c) => !c.parent_comment_id);
 
-  const getCommentReplies = (commentId: string) => {
-    return getReplies(commentId);
-  };
-
   if (isLoadingUser) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -117,7 +113,7 @@ export function CommentThread({ prId }: CommentThreadProps) {
               currentUserId={currentUserId}
               onReply={handleReply}
               onDelete={deleteComment}
-              replies={getCommentReplies(comment.id)}
+              getReplies={getReplies}
               depth={0}
               maxDepth={3}
             />

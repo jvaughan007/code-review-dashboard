@@ -43,9 +43,9 @@ export function PRDetailClient({ prId }: PRDetailClientProps) {
     if (!sessionId) return; // Don't track until we have a session
 
     function handleMouseMove(e: MouseEvent) {
-      // Get coordinates relative to viewport (since cursors are rendered in viewport)
-      const x = e.clientX;
-      const y = e.clientY;
+      // Get coordinates relative to document (accounts for scroll)
+      const x = e.pageX;
+      const y = e.pageY;
 
       updateCursorPosition(x, y, null);
     }
