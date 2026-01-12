@@ -1,77 +1,110 @@
 # Database Migration Instructions
 
+## Current Status
+
+✅ **Comments table has been dropped** (user action completed)
+✅ **Supabase CLI is NOT installed** (not needed for this project)
+⚠️ **Ready for fresh table creation**
+
 ## Issue Fixed
 
-**Problem**: Comments were failing to post with database errors because the `comments` table schema was missing required columns (`username` and `avatar_url`).
+**Problem**: Comments were failing to post because the database schema was missing required columns (`username` and `avatar_url`) that the application code expected.
 
-**Solution**: Updated migration `004_create_comments_table.sql` to include these columns.
+**Solution**: Created fresh migration `004_create_comments_table_v2.sql` with all required fields.
 
 ## How to Apply the Migration
 
-### Option 1: Supabase Dashboard (Recommended)
+### ✅ Recommended: Supabase Dashboard (Direct SQL)
 
-1. Go to your Supabase project dashboard
-2. Navigate to **SQL Editor**
-3. Open the file: `supabase/migrations/004_create_comments_table.sql`
-4. Copy the entire SQL content
-5. Paste it into the SQL Editor
-6. Click **Run** to execute the migration
+**Since you already deleted the comments table, use this clean migration:**
 
-### Option 2: Supabase CLI (if configured)
+1. **Open Supabase Dashboard**
+   - Go to your project at https://supabase.com/dashboard
+   - Navigate to **SQL Editor** (left sidebar)
 
-```bash
-# Initialize Supabase (if not already done)
-supabase init
+2. **Copy Migration SQL**
+   - Open file: `supabase/migrations/004_create_comments_table_v2.sql`
+   - Copy the ENTIRE contents (includes DROP TABLE, CREATE TABLE, indexes, RLS policies)
 
-# Link to your remote project
-supabase link --project-ref YOUR_PROJECT_REF
+3. **Run Migration**
+   - Paste into SQL Editor
+   - Click **Run** button
+   - Wait for "Success" message
 
-# Apply the migration
-supabase db push
-```
+4. **Verify**
+   - Scroll down in the results panel
+   - You should see:
+     - ✓ Table exists
+     - ✓ RLS is enabled
+     - Table structure with all columns
+     - List of indexes
+     - List of RLS policies
 
-### Option 3: Drop and Recreate (Development Only)
+### ❌ NOT Recommended: Supabase CLI
 
-If you're in development and have no production data:
+Supabase CLI is **not installed** in this project and is **not needed**. The dashboard SQL Editor is simpler and works perfectly for this use case.
 
-```sql
--- Run this in Supabase SQL Editor
-DROP TABLE IF EXISTS comments CASCADE;
+## Expected Table Structure
 
--- Then run the full migration from 004_create_comments_table.sql
-```
+After migration, the `comments` table will have:
 
-## Verification
+**Columns:**
+- ✅ `id` (UUID, PRIMARY KEY) - Auto-generated
+- ✅ `pr_id` (TEXT, NOT NULL) - Format: "owner/repo/number"
+- ✅ `user_id` (UUID, NOT NULL) - References auth.users
+- ✅ `username` (TEXT, NOT NULL) - Denormalized for performance
+- ✅ `avatar_url` (TEXT, NULLABLE) - Denormalized for performance
+- ✅ `parent_comment_id` (UUID, NULLABLE) - For threading (max depth 3)
+- ✅ `body` (TEXT, NOT NULL) - Comment content (max 10,000 chars)
+- ✅ `created_at` (TIMESTAMPTZ, NOT NULL) - Auto-timestamp
+- ✅ `updated_at` (TIMESTAMPTZ, NOT NULL) - Auto-updated via trigger
 
-After applying the migration, verify the table structure:
+**Indexes (for performance):**
+- ✅ `idx_comments_pr_id` - Fast PR comment queries
+- ✅ `idx_comments_parent` - Fast reply lookups
+- ✅ `idx_comments_user_id` - Fast user comment queries
+- ✅ `idx_comments_pr_user` - Composite index
 
-```sql
--- Check table structure
-SELECT column_name, data_type, is_nullable
-FROM information_schema.columns
-WHERE table_name = 'comments'
-ORDER BY ordinal_position;
-```
-
-Expected columns:
-- `id` (UUID, NOT NULL)
-- `pr_id` (TEXT, NOT NULL)
-- `user_id` (UUID, NOT NULL)
-- `username` (TEXT, NOT NULL) ← **NEW**
-- `avatar_url` (TEXT, NULLABLE) ← **NEW**
-- `parent_comment_id` (UUID, NULLABLE)
-- `body` (TEXT, NOT NULL)
-- `created_at` (TIMESTAMPTZ, NOT NULL)
-- `updated_at` (TIMESTAMPTZ, NOT NULL)
+**RLS Policies (security):**
+- ✅ Anyone can read comments
+- ✅ Authenticated users can insert comments
+- ✅ Users can update own comments (15-minute window)
+- ✅ Users can delete own comments
 
 ## Testing After Migration
 
-1. Start the dev server: `npm run dev`
-2. Log in with GitHub OAuth
-3. Navigate to any PR detail page
-4. Try posting a comment
-5. Verify comment appears with your username and avatar
-6. Try replying to the comment
-7. Try deleting your comment
+### 1. Verify Migration Success
 
-All operations should work without errors!
+The migration script includes verification output. You should see:
+```
+NOTICE:  Verifying comments table...
+NOTICE:  ✓ Table exists
+NOTICE:  ✓ RLS is enabled
+NOTICE:  Migration complete!
+```
+
+### 2. Test in Application
+
+```bash
+# Start dev server
+npm run dev
+```
+
+**Test Steps:**
+1. ✅ **Log in** with GitHub OAuth
+2. ✅ **Navigate** to any PR detail page
+3. ✅ **Post a comment** → Should appear immediately with your username/avatar
+4. ✅ **Reply** to the comment → Should thread correctly (indented)
+5. ✅ **Delete** your comment → Should remove completely
+6. ✅ **Check real-time sync** → Open same PR in another browser window, comment should sync within 3 seconds
+
+### Expected Behavior
+
+- **Optimistic UI**: Comments appear instantly before server saves
+- **Real-time sync**: Comments sync every 3 seconds via polling
+- **Character counter**: Max 10,000 characters
+- **Relative timestamps**: "2 minutes ago", "1 hour ago", etc.
+- **Threading**: Up to 3 levels deep (original → reply → reply to reply)
+- **Delete button**: Only visible on hover, only for your own comments
+
+All operations should work without errors! 🎉
