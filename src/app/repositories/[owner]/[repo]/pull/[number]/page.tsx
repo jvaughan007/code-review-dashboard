@@ -6,6 +6,8 @@ import { GitPullRequest, FileCode, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { PresenceIndicator } from "@/components/presence-indicator";
 import { PRDetailClient } from "@/components/pr-detail-client";
+import { DiffViewer } from "@/components/diff-viewer";
+import { CommentThread } from "@/components/comment-thread";
 
 interface PageProps {
   params: Promise<{
@@ -151,10 +153,11 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
                     </div>
 
                     {file.patch && (
-                      <div className="mt-3 overflow-x-auto rounded-md bg-muted p-4">
-                        <pre className="text-xs font-mono">
-                          <code>{file.patch}</code>
-                        </pre>
+                      <div className="mt-3">
+                        <DiffViewer
+                          patch={file.patch}
+                          filename={file.filename}
+                        />
                       </div>
                     )}
                   </div>
@@ -162,10 +165,15 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
               </div>
             </div>
 
+            {/* Comments Section */}
+            <div className="mt-6">
+              <CommentThread prId={`${owner}/${repo}/${number}`} />
+            </div>
+
             {/* Week 2: Real-time Collaboration Features */}
-            <div className="mt-6 rounded-lg border border-primary/50 bg-primary/5 p-6">
+            <div className="mt-6 rounded-lg border border-green-600/50 bg-green-600/5 p-6">
               <h3 className="text-lg font-semibold mb-2">
-                🚀 Week 2: Real-time Collaboration (In Progress)
+                ✅ Week 2: Real-time Collaboration (Complete)
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
@@ -176,9 +184,9 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
                   <span className="text-green-600">✓</span>
                   <span>Live cursors - See where teammates are in the code</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <span>○</span>
-                  <span>Real-time comments - Synchronized comment threads</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Real-time comments - Synchronized comment threads with optimistic UI</span>
                 </div>
               </div>
             </div>

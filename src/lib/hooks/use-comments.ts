@@ -12,25 +12,20 @@ import { useCommentsStore, type Comment } from '@/lib/stores/comments-store';
  * - Database polling every 3 seconds
  * - Automatic rollback on error
  * - Supports threaded replies
+ * - PR-level comments (simplified for MVP)
  *
  * @param prId - PR identifier (format: "owner/repo/number")
- * @param filePath - File path
- * @param lineNumber - Line number
  * @param enabled - Whether to enable comment polling (default: true)
  */
 
 interface UseCommentsOptions {
   prId: string;
-  filePath: string;
-  lineNumber: number;
   enabled?: boolean;
   pollingInterval?: number; // ms (default: 3000)
 }
 
 export function useComments({
   prId,
-  filePath,
-  lineNumber,
   enabled = true,
   pollingInterval = 3000,
 }: UseCommentsOptions) {
@@ -40,9 +35,9 @@ export function useComments({
     addComment,
     updateComment,
     deleteComment,
-    markCommentError,
-    replaceOptimisticComment,
-    getCommentsForLine,
+    markError,
+    replaceOptimistic,
+    getComments,
     getCommentCount,
     getReplies,
   } = useCommentsStore();
@@ -51,7 +46,7 @@ export function useComments({
 
   // Poll for comment updates
   useEffect(() => {
-    if (!enabled || !prId || !filePath) return;
+    if (!enabled || !prId) return;
 
     async function pollComments() {
       try {
@@ -59,9 +54,6 @@ export function useComments({
           .from('comments')
           .select('*')
           .eq('pr_id', prId)
-          .eq('file_path', filePath)
-          .eq('line_number', lineNumber)
-          .eq('is_deleted', false)
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -69,7 +61,7 @@ export function useComments({
           return;
         }
 
-        setComments(prId, filePath, lineNumber, data as Comment[]);
+        setComments(prId, data as Comment[]);
       } catch (error) {
         console.error('Error in comment polling:', error);
       }
@@ -86,11 +78,11 @@ export function useComments({
         clearInterval(pollingRef.current);
       }
     };
-  }, [prId, filePath, lineNumber, enabled, pollingInterval, supabase, setComments]);
+  }, [prId, enabled, pollingInterval, supabase, setComments]);
 
   // Add comment with optimistic UI
   const addCommentOptimistic = useCallback(
-    async (content: string, parentId: string | null = null) => {
+    async (body: string, parentCommentId: string | null = null) => {
       try {
         const { data: user } = await supabase.auth.getUser();
         if (!user.user) {
@@ -104,47 +96,40 @@ export function useComments({
         const optimisticComment: Comment = {
           id: tempId,
           pr_id: prId,
-          file_path: filePath,
-          line_number: lineNumber,
           user_id: user.user.id,
           username: user.user.user_metadata.user_name || user.user.email?.split('@')[0] || 'Anonymous',
           avatar_url: user.user.user_metadata.avatar_url || null,
-          content,
-          parent_id: parentId,
+          body,
+          parent_comment_id: parentCommentId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          is_deleted: false,
           isPending: true,
           tempId,
         };
 
         // Add optimistic comment to store
-        addComment(optimisticComment);
+        addComment(prId, optimisticComment);
 
         // Save to database
         const { data, error } = await supabase
           .from('comments')
           .insert({
             pr_id: prId,
-            file_path: filePath,
-            line_number: lineNumber,
             user_id: user.user.id,
-            username: optimisticComment.username,
-            avatar_url: optimisticComment.avatar_url,
-            content,
-            parent_id: parentId,
+            body,
+            parent_comment_id: parentCommentId,
           })
           .select()
           .single();
 
         if (error) {
           // Mark as error
-          markCommentError(tempId, true);
+          markError(tempId, true);
           throw error;
         }
 
         // Replace optimistic with real comment
-        replaceOptimisticComment(tempId, data as Comment);
+        replaceOptimistic(tempId, data as Comment);
 
         return data as Comment;
       } catch (error) {
@@ -152,32 +137,21 @@ export function useComments({
         throw error;
       }
     },
-    [
-      prId,
-      filePath,
-      lineNumber,
-      supabase,
-      addComment,
-      markCommentError,
-      replaceOptimisticComment,
-    ]
+    [prId, supabase, addComment, markError, replaceOptimistic]
   );
 
   // Update comment
   const updateCommentContent = useCallback(
-    async (commentId: string, content: string) => {
+    async (commentId: string, body: string) => {
       try {
         // Optimistically update local store
-        updateComment(commentId, {
-          content,
-          updated_at: new Date().toISOString(),
-        });
+        updateComment(commentId, body);
 
         // Update database
         const { error } = await supabase
           .from('comments')
           .update({
-            content,
+            body,
             updated_at: new Date().toISOString(),
           })
           .eq('id', commentId);
@@ -193,17 +167,17 @@ export function useComments({
     [supabase, updateComment]
   );
 
-  // Delete comment (soft delete)
-  const deleteCommentSoft = useCallback(
+  // Delete comment (hard delete)
+  const deleteCommentHard = useCallback(
     async (commentId: string) => {
       try {
-        // Optimistically mark as deleted
+        // Optimistically remove from store
         deleteComment(commentId);
 
-        // Update database
+        // Delete from database
         const { error } = await supabase
           .from('comments')
-          .update({ is_deleted: true })
+          .delete()
           .eq('id', commentId);
 
         if (error) {
@@ -218,11 +192,11 @@ export function useComments({
   );
 
   return {
-    comments: getCommentsForLine(prId, filePath, lineNumber),
-    commentCount: getCommentCount(prId, filePath, lineNumber),
-    getReplies,
+    comments: getComments(prId),
+    commentCount: getCommentCount(prId),
+    getReplies: (parentId: string) => getReplies(prId, parentId),
     addComment: addCommentOptimistic,
     updateComment: updateCommentContent,
-    deleteComment: deleteCommentSoft,
+    deleteComment: deleteCommentHard,
   };
 }

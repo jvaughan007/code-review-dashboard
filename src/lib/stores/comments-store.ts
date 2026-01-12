@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 
 /**
  * Comments Store - Manages real-time synchronized comments
@@ -7,22 +8,21 @@ import { create } from 'zustand';
  * - Comments appear instantly (optimistic)
  * - Database sync happens in background
  * - Rollback on error
- * - Supports threaded replies
+ * - Supports threaded replies (max depth 3)
+ *
+ * Simplified for MVP: PR-level comments (not line-level)
  */
 
 export interface Comment {
   id: string;
   pr_id: string;
-  file_path: string;
-  line_number: number;
   user_id: string;
   username: string;
   avatar_url: string | null;
-  content: string;
-  parent_id: string | null; // For threaded replies
+  parent_comment_id: string | null; // For threaded replies
+  body: string;
   created_at: string;
   updated_at: string;
-  is_deleted: boolean;
 
   // Optimistic UI flags (not in DB)
   isPending?: boolean; // Comment is being saved
@@ -31,137 +31,141 @@ export interface Comment {
 }
 
 interface CommentsState {
-  // Comments by PR, file, and line
-  commentsByPRFileLine: Record<string, Comment[]>;
-
-  // Loading states
-  isLoading: boolean;
+  // Comments by PR
+  commentsByPR: Map<string, Comment[]>;
 
   // Actions
-  setComments: (prId: string, filePath: string, lineNumber: number, comments: Comment[]) => void;
-  addComment: (comment: Comment) => void;
-  updateComment: (commentId: string, updates: Partial<Comment>) => void;
+  setComments: (prId: string, comments: Comment[]) => void;
+  addComment: (prId: string, comment: Comment) => void;
+  updateComment: (commentId: string, body: string) => void;
   deleteComment: (commentId: string) => void;
-  markCommentPending: (tempId: string, isPending: boolean) => void;
-  markCommentError: (tempId: string, isError: boolean) => void;
-  replaceOptimisticComment: (tempId: string, realComment: Comment) => void;
-  setLoading: (loading: boolean) => void;
+  markPending: (tempId: string, isPending: boolean) => void;
+  markError: (tempId: string, isError: boolean) => void;
+  replaceOptimistic: (tempId: string, realComment: Comment) => void;
+  clearComments: (prId: string) => void;
 
-  // Helpers
-  getCommentsForLine: (prId: string, filePath: string, lineNumber: number) => Comment[];
-  getCommentCount: (prId: string, filePath: string, lineNumber: number) => number;
-  getReplies: (parentId: string) => Comment[];
+  // Selectors
+  getComments: (prId: string) => Comment[];
+  getTopLevelComments: (prId: string) => Comment[];
+  getReplies: (prId: string, parentId: string) => Comment[];
+  getCommentCount: (prId: string) => number;
 }
 
-export const useCommentsStore = create<CommentsState>((set, get) => ({
-  commentsByPRFileLine: {},
-  isLoading: false,
+export const useCommentsStore = create<CommentsState>()(
+  devtools(
+    (set, get) => ({
+      commentsByPR: new Map(),
 
-  setComments: (prId, filePath, lineNumber, comments) => {
-    const key = `${prId}:${filePath}:${lineNumber}`;
-    set((state) => ({
-      commentsByPRFileLine: {
-        ...state.commentsByPRFileLine,
-        [key]: comments,
+      setComments: (prId, comments) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+          newMap.set(prId, comments);
+          return { commentsByPR: newMap };
+        }),
+
+      addComment: (prId, comment) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+          const existing = newMap.get(prId) || [];
+          newMap.set(prId, [...existing, comment]);
+          return { commentsByPR: newMap };
+        }),
+
+      updateComment: (commentId, body) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+
+          for (const [prId, comments] of newMap.entries()) {
+            const updated = comments.map((c) =>
+              c.id === commentId
+                ? { ...c, body, updated_at: new Date().toISOString() }
+                : c
+            );
+            newMap.set(prId, updated);
+          }
+
+          return { commentsByPR: newMap };
+        }),
+
+      deleteComment: (commentId) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+
+          for (const [prId, comments] of newMap.entries()) {
+            const filtered = comments.filter((c) => c.id !== commentId);
+            newMap.set(prId, filtered);
+          }
+
+          return { commentsByPR: newMap };
+        }),
+
+      markPending: (tempId, isPending) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+
+          for (const [prId, comments] of newMap.entries()) {
+            const updated = comments.map((c) =>
+              c.tempId === tempId ? { ...c, isPending } : c
+            );
+            newMap.set(prId, updated);
+          }
+
+          return { commentsByPR: newMap };
+        }),
+
+      markError: (tempId, isError) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+
+          for (const [prId, comments] of newMap.entries()) {
+            const updated = comments.map((c) =>
+              c.tempId === tempId ? { ...c, isError, isPending: false } : c
+            );
+            newMap.set(prId, updated);
+          }
+
+          return { commentsByPR: newMap };
+        }),
+
+      replaceOptimistic: (tempId, realComment) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+
+          for (const [prId, comments] of newMap.entries()) {
+            const updated = comments.map((c) =>
+              c.tempId === tempId ? realComment : c
+            );
+            newMap.set(prId, updated);
+          }
+
+          return { commentsByPR: newMap };
+        }),
+
+      clearComments: (prId) =>
+        set((state) => {
+          const newMap = new Map(state.commentsByPR);
+          newMap.delete(prId);
+          return { commentsByPR: newMap };
+        }),
+
+      getComments: (prId) => {
+        return get().commentsByPR.get(prId) || [];
       },
-    }));
-  },
 
-  addComment: (comment) => {
-    const key = `${comment.pr_id}:${comment.file_path}:${comment.line_number}`;
-    set((state) => ({
-      commentsByPRFileLine: {
-        ...state.commentsByPRFileLine,
-        [key]: [...(state.commentsByPRFileLine[key] || []), comment],
+      getTopLevelComments: (prId) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        return comments.filter((c) => !c.parent_comment_id);
       },
-    }));
-  },
 
-  updateComment: (commentId, updates) => {
-    set((state) => {
-      const newComments = { ...state.commentsByPRFileLine };
+      getReplies: (prId, parentId) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        return comments.filter((c) => c.parent_comment_id === parentId);
+      },
 
-      Object.keys(newComments).forEach((key) => {
-        newComments[key] = newComments[key].map((c) =>
-          c.id === commentId ? { ...c, ...updates } : c
-        );
-      });
-
-      return { commentsByPRFileLine: newComments };
-    });
-  },
-
-  deleteComment: (commentId) => {
-    set((state) => {
-      const newComments = { ...state.commentsByPRFileLine };
-
-      Object.keys(newComments).forEach((key) => {
-        newComments[key] = newComments[key].map((c) =>
-          c.id === commentId ? { ...c, is_deleted: true } : c
-        );
-      });
-
-      return { commentsByPRFileLine: newComments };
-    });
-  },
-
-  markCommentPending: (tempId, isPending) => {
-    set((state) => {
-      const newComments = { ...state.commentsByPRFileLine };
-
-      Object.keys(newComments).forEach((key) => {
-        newComments[key] = newComments[key].map((c) =>
-          c.tempId === tempId ? { ...c, isPending } : c
-        );
-      });
-
-      return { commentsByPRFileLine: newComments };
-    });
-  },
-
-  markCommentError: (tempId, isError) => {
-    set((state) => {
-      const newComments = { ...state.commentsByPRFileLine };
-
-      Object.keys(newComments).forEach((key) => {
-        newComments[key] = newComments[key].map((c) =>
-          c.tempId === tempId ? { ...c, isError, isPending: false } : c
-        );
-      });
-
-      return { commentsByPRFileLine: newComments };
-    });
-  },
-
-  replaceOptimisticComment: (tempId, realComment) => {
-    set((state) => {
-      const newComments = { ...state.commentsByPRFileLine };
-
-      Object.keys(newComments).forEach((key) => {
-        newComments[key] = newComments[key].map((c) =>
-          c.tempId === tempId ? realComment : c
-        );
-      });
-
-      return { commentsByPRFileLine: newComments };
-    });
-  },
-
-  setLoading: (loading) => set({ isLoading: loading }),
-
-  // Helper methods
-  getCommentsForLine: (prId, filePath, lineNumber) => {
-    const key = `${prId}:${filePath}:${lineNumber}`;
-    const comments = get().commentsByPRFileLine[key] || [];
-    return comments.filter((c) => !c.is_deleted && !c.parent_id);
-  },
-
-  getCommentCount: (prId, filePath, lineNumber) => {
-    return get().getCommentsForLine(prId, filePath, lineNumber).length;
-  },
-
-  getReplies: (parentId) => {
-    const allComments = Object.values(get().commentsByPRFileLine).flat();
-    return allComments.filter((c) => c.parent_id === parentId && !c.is_deleted);
-  },
-}));
+      getCommentCount: (prId) => {
+        return (get().commentsByPR.get(prId) || []).length;
+      },
+    }),
+    { name: 'CommentsStore' }
+  )
+);
