@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useCommentsStore, type Comment } from '@/lib/stores/comments-store';
+import { logActivity } from '@/lib/utils/activity-logger';
 
 /**
  * useComments - Manages real-time comments with optimistic UI
@@ -133,6 +134,21 @@ export function useComments({
         // Replace optimistic with real comment
         replaceOptimistic(tempId, data as Comment);
 
+        // Log activity: comment posted
+        await logActivity({
+          prId,
+          userId: user.user.id,
+          sessionId: null, // Comments don't have session context
+          activityType: 'comment_posted',
+          metadata: {
+            comment_id: data.id,
+            username: optimisticComment.username,
+            avatar_url: optimisticComment.avatar_url,
+            body_preview: body.slice(0, 100), // First 100 chars
+            is_reply: !!parentCommentId,
+          },
+        });
+
         return data as Comment;
       } catch (error) {
         console.error('Error adding comment:', error);
@@ -173,6 +189,9 @@ export function useComments({
   const deleteCommentHard = useCallback(
     async (commentId: string) => {
       try {
+        // Get user before deleting (for activity log)
+        const { data: { user } } = await supabase.auth.getUser();
+
         // Optimistically remove from store
         deleteComment(commentId);
 
@@ -185,12 +204,27 @@ export function useComments({
         if (error) {
           throw error;
         }
+
+        // Log activity: comment deleted
+        if (user) {
+          await logActivity({
+            prId,
+            userId: user.id,
+            sessionId: null,
+            activityType: 'comment_deleted',
+            metadata: {
+              comment_id: commentId,
+              username: user.user_metadata.user_name || user.email?.split('@')[0] || 'Anonymous',
+              avatar_url: user.user_metadata.avatar_url || null,
+            },
+          });
+        }
       } catch (error) {
         console.error('Error deleting comment:', error);
         throw error;
       }
     },
-    [supabase, deleteComment]
+    [prId, supabase, deleteComment]
   );
 
   return {

@@ -8,6 +8,7 @@ import { PresenceIndicator } from "@/components/presence-indicator";
 import { PRDetailClient } from "@/components/pr-detail-client";
 import { DiffViewer } from "@/components/diff-viewer";
 import { CommentThread } from "@/components/comment-thread";
+import { ActivityFeedContainer } from "@/components/activity-feed/activity-feed-container";
 
 interface PageProps {
   params: Promise<{
@@ -38,6 +39,9 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
     <>
       {/* Live cursor tracking - wraps entire viewport */}
       <PRDetailClient prId={`${owner}/${repo}/${number}`} />
+
+      {/* Activity Feed - floating sidebar */}
+      <ActivityFeedContainer prId={`${owner}/${repo}/${number}`} />
 
       <div className="min-h-screen bg-background p-8">
         <div className="mx-auto max-w-6xl">

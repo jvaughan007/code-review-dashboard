@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { usePresenceStore, type PresenceUser } from '@/lib/stores/presence-store';
+import { logActivity } from '@/lib/utils/activity-logger';
 
 /**
  * usePresence - Manages presence data with database polling
@@ -122,6 +123,18 @@ export function usePresence({
         // Set sessionId AFTER presence is created to prevent race condition
         // This triggers useCursors to start polling, which will now find presence data
         setCurrentSessionId(session.id);
+
+        // Log activity: user joined PR
+        await logActivity({
+          prId,
+          userId: user.id,
+          sessionId: session.id,
+          activityType: 'user_joined',
+          metadata: {
+            username: user.user_metadata.user_name || user.email?.split('@')[0] || 'Anonymous',
+            avatar_url: user.user_metadata.avatar_url || null,
+          },
+        });
       } catch (error) {
         console.error('Error joining session:', error);
       }
@@ -201,11 +214,28 @@ export function usePresence({
   // Leave session on unmount
   useEffect(() => {
     return () => {
-      if (!currentSessionId) return;
+      if (!currentSessionId || !prId) return;
 
       // Async cleanup
       (async () => {
         try {
+          // Get current user for activity logging
+          const { data: { user } } = await supabase.auth.getUser();
+
+          // Log activity: user left PR (before deleting presence)
+          if (user) {
+            await logActivity({
+              prId,
+              userId: user.id,
+              sessionId: currentSessionId,
+              activityType: 'user_left',
+              metadata: {
+                username: user.user_metadata.user_name || user.email?.split('@')[0] || 'Anonymous',
+                avatar_url: user.user_metadata.avatar_url || null,
+              },
+            });
+          }
+
           // Mark session as inactive
           await supabase
             .from('pr_sessions')
@@ -219,7 +249,7 @@ export function usePresence({
         }
       })();
     };
-  }, [currentSessionId, supabase]);
+  }, [currentSessionId, prId, supabase]);
 
   // Note: beforeunload cleanup removed (Decision Council #6)
   //
