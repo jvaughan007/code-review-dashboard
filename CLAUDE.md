@@ -998,6 +998,29 @@ Step 5: Commit
 
 ---
 
+## ✅ PRE-SPRINT INFRASTRUCTURE CHECKLIST
+
+Before starting ANY sprint, verify infrastructure is ready:
+
+**Testing Infrastructure**:
+- [ ] Test runner installed (Vitest)
+- [ ] Coverage reporting configured (@vitest/coverage-v8)
+- [ ] Test setup file created (src/test/setup.ts)
+- [ ] Common mocks available (src/test/mocks.ts)
+
+**Development Environment**:
+- [ ] All dependencies installed (npm install)
+- [ ] Environment variables configured (.env.local)
+- [ ] Database migrations applied
+- [ ] Build passes (npm run build)
+
+**CI/CD** (if applicable):
+- [ ] Test command runs in CI
+- [ ] Coverage thresholds set
+- [ ] Lint checks pass
+
+---
+
 ## ✅ PRE-IMPLEMENTATION CHECKLIST
 
 Before writing ANY code, verify:
@@ -1009,10 +1032,11 @@ Before writing ANY code, verify:
 - [ ] Technical design created (Lead Engineer)
 - [ ] Test strategy defined (QA Lead)
 
-**TDD Workflow**:
-- [ ] Failing tests written FIRST (RED phase)
-- [ ] Tests actually FAIL (verified)
-- [ ] Minimal implementation planned
+**TDD-Influenced Workflow**:
+- [ ] Test targets identified (prioritize stores over hooks)
+- [ ] Store tests for business logic
+- [ ] Component tests for rendering edge cases
+- [ ] Defer hook tests if they require extensive mocking
 
 **Multi-Domain Detection**:
 - [ ] All domains identified (frontend, backend, database, etc.)
@@ -1024,42 +1048,86 @@ Before writing ANY code, verify:
 - [ ] Specialist recommendations documented
 - [ ] Conflicts resolved (Decision Council if needed)
 
+**Decision Council Usage**:
+- [ ] Use for decisions with 3+ viable options
+- [ ] Document decision rationale
+- [ ] Record unanimous vs majority votes
+
+---
+
+## 📋 SPRINT PLANNING GUIDELINES
+
+**Lessons learned from Sprint 2 Retrospective:**
+
+### Realistic Sizing
+- Include **20% buffer** in all estimates for unexpected issues
+- Story points based on actual complexity, not optimistic estimates
+- Test counts based on code analysis, not aspirational targets
+
+### Sprint Plan Structure
+- **Cap sprint plans at 200 lines** (avoid over-detailed hour-by-hour schedules)
+- Clearly separate **must-haves** vs **stretch goals**
+- Mark stretch goals explicitly: `[STRETCH]`
+
+### Test Target Guidelines
+| Target | Priority | Complexity | Notes |
+|--------|----------|------------|-------|
+| Zustand stores | HIGH | LOW | Pure functions, easy to test |
+| Component rendering | MEDIUM | LOW | Structure and edge cases |
+| Hooks with Supabase | LOW | HIGH | Require extensive mocking - defer or use E2E |
+
+### Decision Council Usage
+Use Decision Council when:
+- 3+ viable options exist
+- Significant impact on project direction
+- Trade-offs need explicit evaluation
+
+Format:
+```
+Options: [A, B, C]
+Criteria: efficiency (25%), quality (25%), best practices (25%), risk (25%)
+Vote: [Unanimous/Majority] for Option X
+Rationale: [Brief justification]
+```
+
 ---
 
 ## 📊 SUCCESS CRITERIA
 
 ### AGILE Process Quality
 - ✅ Sprint Planning artifacts complete before implementation
-- ✅ TDD RED-GREEN-REFACTOR cycle followed
+- ✅ TDD-influenced approach followed (stores first, then components)
 - ✅ All specialists consulted (multi-domain detection)
 - ✅ Sprint Review acceptance documented
-- ✅ Retrospective action items tracked
+- ✅ Retrospective action items tracked and applied
 
 ### Code Quality
 - ✅ Zero TypeScript errors
-- ✅ All tests passing (80%+ coverage)
+- ✅ All tests passing
+- ✅ Store coverage >= 75%
 - ✅ Build succeeds
 - ✅ Production-ready (no hallucinations)
 
 ### Documentation Quality
-- ✅ SESSION_TRACKER.md updated with specialist consultations
+- ✅ README updated with current features
+- ✅ TESTING.md maintained with test patterns
 - ✅ Sprint artifacts committed to repo
-- ✅ Retrospective lessons learned captured
+- ✅ Retrospective lessons applied to CLAUDE.md
 
 ---
 
 ## 🔴 ANTI-PATTERNS (FORBIDDEN)
 
-### ❌ ANTI-PATTERN 1: Skipping TDD
+### ❌ ANTI-PATTERN 1: Skipping Tests Entirely
 
 ```
 # BAD
 User: "Implement live cursors"
-Me: *Writes implementation code without tests*
+Me: *Writes implementation code without ANY tests*
 
 # GOOD
 User: "Implement live cursors"
-Me: *Sprint Planning → QA Lead writes failing tests → Specialists implement*
+Me: *Implement feature → Write store tests for business logic → Component tests for edge cases*
 ```
 
 ### ❌ ANTI-PATTERN 2: Single Specialist for Multi-Domain Task
@@ -1118,14 +1186,15 @@ Me: *Sprint Planning → User Stories → Requirements → Technical Design → 
 
 ## Important Notes
 
-- **AGILE TDD is MANDATORY** - All features implemented using this methodology
-- **Test-first mindset** - Write failing tests before implementation
+- **TDD-influenced development** - Test business logic in stores, defer complex mocking
+- **Store-first testing** - Zustand stores are pure functions, easy to test with high value
 - **Specialist-driven** - Every tech has dedicated expert
 - **Quality over speed** - Zero hallucinations, production-ready code
-- **Learn from mistakes** - Retrospectives capture lessons learned
+- **Learn from mistakes** - Retrospectives capture lessons learned and apply to CLAUDE.md
+- **Decision Council** - Use for strategic decisions with 3+ options
 
 ---
 
-**Last Updated**: 2026-01-09 (Session #9 - Added AGILE TDD Methodology)
-**Maintained By**: Claude Code (Sonnet 4.5) + User collaboration
-**Enforcement**: MANDATORY - AGILE process prevents bugs proven in Sessions #1-8
+**Last Updated**: 2026-01-13 (Sprint 2 Complete - Applied Retrospective Learnings)
+**Maintained By**: Claude Code (Opus 4.5) + User collaboration
+**Enforcement**: AGILE process with pragmatic testing prevents bugs proven in Sessions #1-9
