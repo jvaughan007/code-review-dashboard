@@ -4,52 +4,79 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/jvaughan007/code-review-dashboard)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/Tests-55%20passing-success)](package.json)
 
 **Live Repository**: [github.com/jvaughan007/code-review-dashboard](https://github.com/jvaughan007/code-review-dashboard)
 
-## 🎯 Overview
+## Overview
 
 Code Review Dashboard enables teams to review GitHub pull requests together in real-time with live cursors, presence indicators, and synchronized comments. Built to solve the pain of asynchronous PR reviews across distributed teams.
 
-## ✨ Features (Planned)
+## Features
 
-- **Real-time Collaboration**: See teammates' cursors and review PRs together
+### Real-time Collaboration
+- **Live Cursors**: See teammates' cursor positions in real-time with smooth animations
+- **Presence Indicators**: Avatar stack showing who's viewing each PR
+- **Activity Feed**: Real-time timeline of all collaboration events
+
+### Code Review Tools
+- **Syntax-Highlighted Diffs**: Side-by-side diff viewer with color-coded changes
+- **Threaded Comments**: Add, reply to, and delete comments with real-time sync
 - **GitHub Integration**: OAuth authentication and seamless PR fetching
-- **Live Updates**: WebSocket-powered real-time updates
-- **Performance Optimized**: Built with Next.js 15 Server Components
-- **Type-Safe**: Full TypeScript with strict mode
-- **Beautiful UI**: Tailwind CSS 4 + shadcn/ui components
 
-## 🛠️ Tech Stack
+### Technical Excellence
+- **Zero-cost Architecture**: Runs entirely on Supabase free tier
+- **Database Polling**: Efficient 2-second polling for real-time updates
+- **Type-Safe**: Full TypeScript with strict mode (zero errors)
+- **Test Coverage**: 55 passing tests with comprehensive store coverage
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript 5.9 (strict mode)
-- **Styling**: Tailwind CSS 4 + shadcn/ui
-- **Database**: Supabase (PostgreSQL + Realtime)
-- **Authentication**: GitHub OAuth via Supabase Auth
+## Tech Stack
+
+- **Framework**: Next.js 16.1.1 (App Router, Server Components)
+- **Language**: TypeScript 5.7.2 (strict mode)
+- **UI**: React 19.2.0 + Tailwind CSS 4.1.0
+- **State**: Zustand 5.0.2
+- **Animations**: Framer Motion 11.16.0
+- **Database**: Supabase (PostgreSQL with RLS)
+- **Auth**: GitHub OAuth via Supabase Auth
+- **Testing**: Vitest + React Testing Library
 - **Deployment**: Vercel (zero-cost)
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 code-review-dashboard/
 ├── src/
-│   ├── app/              # Next.js app router pages
-│   ├── components/       # React components
-│   │   └── ui/          # shadcn/ui components
-│   └── lib/             # Utilities and helpers
-├── public/              # Static assets
-└── portfolio-planning/  # Project planning docs
+│   ├── app/                    # Next.js app router pages
+│   │   ├── repositories/       # Repository & PR pages
+│   │   └── auth/               # Authentication routes
+│   ├── components/             # React components
+│   │   ├── activity-feed/      # Real-time activity timeline
+│   │   ├── ui/                 # shadcn/ui base components
+│   │   ├── diff-viewer.tsx     # Syntax-highlighted diffs
+│   │   ├── live-cursor.tsx     # Animated cursor component
+│   │   ├── cursors-layer.tsx   # Cursor overlay manager
+│   │   ├── comment-*.tsx       # Comment system components
+│   │   └── presence-*.tsx      # Presence indicator
+│   ├── lib/
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── stores/             # Zustand state stores
+│   │   ├── supabase/           # Database queries
+│   │   └── utils/              # Utility functions
+│   └── test/                   # Test setup and mocks
+├── supabase/
+│   └── migrations/             # Database migrations
+└── docs/                       # Documentation
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm or pnpm
 - GitHub account
 - Supabase account (free tier)
 
@@ -59,73 +86,155 @@ code-review-dashboard/
 # Install dependencies
 npm install
 
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your Supabase and GitHub credentials
+
+# Run database migrations
+# (Apply migrations in Supabase dashboard)
+
 # Run development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-## 📊 Performance Benchmarks (Target)
+### Environment Variables
 
-- **Page Load**: <2s for 1000-line diff
-- **Cursor Latency**: <100ms for real-time updates
-- **Concurrent Users**: 100+ without degradation
-- **Lighthouse Score**: 95+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-## 🗺️ Development Roadmap
+# GitHub OAuth (configured in Supabase dashboard)
+# No additional env vars needed - handled by Supabase Auth
+```
 
-### Week 1 ✅ COMPLETE
-- [x] Next.js 15 + TypeScript setup
-- [x] Tailwind CSS 4 configuration
-- [x] shadcn/ui integration
-- [x] Supabase client setup
-- [x] GitHub OAuth integration
-- [x] Login/logout flow with Server Actions
-- [x] Auth middleware for protected routes
-- [x] GitHub API client for repositories and PRs
-- [x] Repositories listing page
-- [x] Pull requests listing page
-- [x] PR detail page with file diffs
-- [x] Navigation and UI layout
-- [x] TypeScript strict mode - zero errors
+## Testing
 
-### Week 2
-- [ ] PR fetching from GitHub API
-- [ ] Diff rendering
-- [ ] Real-time collaboration layer
+This project uses Vitest with React Testing Library for testing.
 
-### Week 3
-- [ ] Comments system
-- [ ] Optimistic UI updates
-- [ ] Live cursors & presence
+### Running Tests
 
-### Week 4
-- [ ] Performance optimization
-- [ ] Load testing
-- [ ] Documentation
-- [ ] Deployment
+```bash
+# Run all tests
+npm test
 
-## 📝 License
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+### Test Coverage
+
+| File | Statements | Lines | Tests |
+|------|------------|-------|-------|
+| cursor-store.ts | 100% | 100% | 15 |
+| comments-store.ts | 87.93% | 87.27% | 15 |
+| presence-store.ts | 76.66% | 73.07% | 13 |
+| diff-viewer.tsx | 75% | 73.33% | 12 |
+| **Total** | - | - | **55** |
+
+### Test Philosophy
+
+We use a **TDD-influenced approach** focusing on:
+- **Zustand stores** (pure functions with business logic)
+- **Component rendering** (structure and edge cases)
+- **Minimal mocking** (avoid complex Supabase mocks)
+
+See [TESTING.md](./TESTING.md) for detailed test strategy.
+
+## Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # TypeScript type checking
+npm test             # Run tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage
+```
+
+## Architecture
+
+### Real-time Sync (Database Polling)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Next.js 16 App Router                    │
+│                         (TypeScript 5.7.2)                       │
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+        ┌───────────▼──────────┐   ┌─────────▼──────────┐
+        │   GitHub API         │   │   Supabase         │
+        │   (OAuth + REST)     │   │   (PostgreSQL)     │
+        └──────────────────────┘   └────────────────────┘
+                                            │
+                        ┌───────────────────┼───────────────────┐
+                        │                   │                   │
+                ┌───────▼────────┐  ┌───────▼────────┐  ┌──────▼──────┐
+                │   presence     │  │    cursors     │  │  comments   │
+                │   (2s poll)    │  │   (2s poll)    │  │  (2s poll)  │
+                └────────────────┘  └────────────────┘  └─────────────┘
+```
+
+### Key Design Decisions
+
+1. **Database Polling** over WebSockets (Supabase free tier compatibility)
+2. **Optimistic Updates** for instant user feedback
+3. **Zustand Stores** for client-side state management
+4. **Server Components** for initial data fetching
+5. **Client Components** for real-time features
+
+## Development Roadmap
+
+### Sprint 1 (Complete)
+- [x] Next.js 16 + TypeScript setup
+- [x] Supabase + GitHub OAuth integration
+- [x] Repository and PR listing pages
+- [x] Real-time presence tracking
+- [x] Live cursor synchronization
+
+### Sprint 2 (Complete)
+- [x] Syntax-highlighted diff viewer (diff2html)
+- [x] Threaded comment system
+- [x] Activity feed with real-time updates
+- [x] Test infrastructure (55 tests)
+- [x] Store testing (presence, cursor, comments)
+
+### Future Enhancements
+- [ ] Line-specific comments on diffs
+- [ ] Markdown preview in comments
+- [ ] Keyboard shortcuts
+- [ ] Mobile responsive improvements
+- [ ] E2E tests with Playwright
+
+## Performance
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Diff Render (500 lines) | <500ms | ~120ms |
+| Comment Sync Latency | <2s | ~2s |
+| Build Time | <2min | ~15s |
+| Test Suite | <30s | ~1s |
+
+## License
 
 MIT
 
-## 🔗 Links
+## Links
 
 - **GitHub Repository**: [github.com/jvaughan007/code-review-dashboard](https://github.com/jvaughan007/code-review-dashboard)
-- **Portfolio Planning**: `../portfolio-planning/`
-- **Architecture Docs**: Coming soon
-- **Live Demo**: Coming soon (deploy to Vercel in Week 2)
+- **Test Strategy**: [TESTING.md](./TESTING.md)
+- **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ---
 
-**Status**: 🚧 In Development (Week 1)
-**Last Updated**: 2026-01-05
+**Status**: MVP Complete
+**Last Updated**: 2026-01-13

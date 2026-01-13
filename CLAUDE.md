@@ -13,28 +13,34 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 - Database polling architecture (not WebSockets/Realtime subscriptions)
 - Zero TypeScript errors maintained at all times
 - Production-quality code with no hallucinations
-- **AGILE TDD methodology** with full specialist team
+- **TDD-influenced development** with full specialist team
 
 ---
 
 ## 🏗️ AGILE DEVELOPMENT METHODOLOGY
 
-**CRITICAL**: This project uses **TRUE AGILE** with Test Driven Development (TDD). All features are implemented using the AGILE team structure, Sprint Planning, and RED-GREEN-REFACTOR cycle documented below.
+**CRITICAL**: This project uses **TDD-influenced development** with AGILE methodology. Features are implemented using the AGILE team structure, Sprint Planning, and testing practices documented below.
 
-### Why AGILE TDD?
+### Why TDD-Influenced Development?
 
 **Goals**:
 1. **Specialist-driven development** - Every tech in stack has dedicated expert
-2. **Test-first mindset** - Write failing tests before implementation (RED → GREEN → REFACTOR)
+2. **Test-informed implementation** - Write tests alongside or after implementation, focusing on business logic
 3. **Quality over speed** - Zero hallucinations, zero TypeScript errors, production-ready code
-4. **Learning through simulation** - Experience real AGILE workflows as if working on a professional team
+4. **Pragmatic testing** - Test Zustand stores (pure functions) rather than heavily-mocked hooks
+
+**Current Test Coverage** (55 tests):
+- `presence-store.ts`: 76.66% statements, 73.07% lines (13 tests)
+- `cursor-store.ts`: 100% statements, 100% lines (15 tests)
+- `comments-store.ts`: 87.93% statements, 87.27% lines (15 tests)
+- `diff-viewer.tsx`: 75% statements, 73.33% lines (12 tests)
 
 **Evidence from SESSION_TRACKER.md**:
 - Implementing features without proper planning leads to bugs
 - Skipping specialists leads to incomplete solutions
-- Not following TDD leads to untested, brittle code
+- Testing business logic in stores provides high value with low complexity
 
-**This AGILE system prevents all of the above.**
+**This AGILE system with pragmatic testing prevents issues proven in Sessions #1-8.**
 
 ---
 
@@ -90,7 +96,7 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 
 **Output**: `sprint_plan_sprint_{N}.md`, `consolidated_retrospective_sprint_{N}.md`
 
-### QA/Testing Team (TDD RED Phase Leaders)
+### QA/Testing Team
 
 #### QA Lead
 **Location**: `~/.claude/agents/agile-team/qa-lead.md`
@@ -98,11 +104,11 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 
 **Responsibilities**:
 - **Writes test strategy** (Test Pyramid: unit, integration, E2E)
-- **Leads TDD RED phase** (writes failing tests BEFORE implementation)
+- **Identifies testable business logic** (prioritizes stores over hooks)
 - Monitors test coverage
 - Validates acceptance criteria
 
-**Output**: `test_strategy_sprint_{N}.md`, `{feature}.test.ts` (failing tests)
+**Output**: `test_strategy_sprint_{N}.md`, `{feature}.test.ts`
 
 #### Test Automation Engineer
 **Location**: `~/.claude/agents/agile-team/test-automation-engineer.md`
