@@ -65,25 +65,74 @@ export function useCursors({
     }
   }, [myColor, setMyColor, supabase]);
 
+  // Clean up old cursors from previous sessions on mount
+  useEffect(() => {
+    if (!enabled || !sessionId) return;
+
+    async function cleanupOldCursors() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        console.log('[CURSORS] Cleaning up old cursors for user:', user.id, 'session:', sessionId);
+
+        // Delete any old cursors from this user's previous sessions
+        // (Keep only the current session's cursor)
+        const { data: deleted, error } = await supabase
+          .from('cursors')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('file_path', filePath)
+          .neq('session_id', sessionId)
+          .select();
+
+        if (error) {
+          console.error('[CURSORS] Error cleaning up old cursors:', error);
+        } else {
+          console.log('[CURSORS] Deleted', deleted?.length || 0, 'old cursor(s)');
+        }
+      } catch (error) {
+        console.error('Error cleaning up old cursors:', error);
+      }
+    }
+
+    cleanupOldCursors();
+  }, [enabled, sessionId, filePath, supabase]);
+
   // Poll for cursor updates
   useEffect(() => {
-    if (!enabled || !prId || !filePath || !sessionId) return;
+    if (!enabled || !prId || !filePath || !sessionId) {
+      // Clear cursors if session not ready
+      setCursors(prId, filePath, []);
+      return;
+    }
 
     async function pollCursors() {
       try {
-        // Fetch cursor positions
+        // Get current user to filter out ALL their cursors (not just current session)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('[CURSORS] No user found for cursor polling');
+          return;
+        }
+
+        console.log('[CURSORS] Polling cursors - excluding user_id:', user.id);
+
+        // Fetch cursor positions (excluding ALL of current user's cursors)
         const { data: cursorsData, error: cursorsError } = await supabase
           .from('cursors')
           .select('*')
           .eq('pr_id', prId)
           .eq('file_path', filePath)
-          .neq('session_id', sessionId) // Exclude own cursor
+          .neq('user_id', user.id) // CRITICAL: Exclude ALL cursors from current user (all sessions/tabs)
           .gte('updated_at', new Date(Date.now() - inactivityTimeout).toISOString()); // Recent cursors only
 
         if (cursorsError) {
-          console.error('Error polling cursors:', cursorsError);
+          console.error('[CURSORS] Error polling cursors:', cursorsError);
           return;
         }
+
+        console.log('[CURSORS] Fetched', cursorsData?.length || 0, 'cursor(s):', cursorsData);
 
         if (!cursorsData || cursorsData.length === 0) {
           setCursors(prId, filePath, []);
@@ -193,22 +242,16 @@ export function useCursors({
         if (!user.user) return;
 
         const cursorData = pendingUpdateRef.current || {
-          id: '',
-          session_id: sessionId,
-          user_id: user.user.id,
-          pr_id: prId,
-          file_path: filePath,
           x,
           y,
           line_number: lineNumber,
-          color: myColor,
-          updated_at: new Date().toISOString(),
         };
 
-        // Optimistically update local store
-        updateCursor(cursorData);
+        // CRITICAL: Do NOT call updateCursor() for own cursor
+        // Optimistic updates would show your own cursor before polling filters it out
+        // Only write to database, let polling handle displaying remote cursors
 
-        // Update database
+        // Update database only
         await supabase
           .from('cursors')
           .upsert(

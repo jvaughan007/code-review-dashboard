@@ -95,9 +95,8 @@ export function usePresence({
 
         if (!isMounted) return;
 
-        setCurrentSessionId(session.id);
-
-        // Create presence entry
+        // CRITICAL: Create presence entry FIRST, then set sessionId
+        // This ensures presence data exists when cursor polling starts
         const { error: presenceError } = await supabase
           .from('presence')
           .upsert(
@@ -117,7 +116,12 @@ export function usePresence({
 
         if (presenceError) {
           console.error('Error creating presence:', presenceError);
+          return; // Don't set sessionId if presence creation failed
         }
+
+        // Set sessionId AFTER presence is created to prevent race condition
+        // This triggers useCursors to start polling, which will now find presence data
+        setCurrentSessionId(session.id);
       } catch (error) {
         console.error('Error joining session:', error);
       }
