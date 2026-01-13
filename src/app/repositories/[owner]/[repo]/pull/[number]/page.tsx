@@ -6,7 +6,7 @@ import { GitPullRequest, FileCode, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { PresenceIndicator } from "@/components/presence-indicator";
 import { PRDetailClient } from "@/components/pr-detail-client";
-import { DiffViewer } from "@/components/diff-viewer";
+import { FilesSection } from "@/components/files-section";
 import { CommentThread } from "@/components/comment-thread";
 import { ActivityFeedContainer } from "@/components/activity-feed/activity-feed-container";
 
@@ -133,40 +133,24 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Files Changed */}
+            {/* Files Changed - with line comment support */}
             <div className="rounded-lg border bg-card">
               <div className="border-b p-4">
                 <h2 className="flex items-center gap-2 text-lg font-semibold">
                   <FileCode className="h-5 w-5" />
                   Files Changed ({files?.length || 0})
                 </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Click on line numbers to add comments
+                </p>
               </div>
 
-              <div className="divide-y">
-                {files?.map((file, index) => (
-                  <div key={index} className="p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="font-mono text-sm">{file.filename}</div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="text-green-600">+{file.additions}</span>
-                        <span className="text-red-600">-{file.deletions}</span>
-                        <span className="rounded-full bg-muted px-2 py-1 text-xs">
-                          {file.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    {file.patch && (
-                      <div className="mt-3">
-                        <DiffViewer
-                          patch={file.patch}
-                          filename={file.filename}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {files && files.length > 0 && (
+                <FilesSection
+                  files={files}
+                  prId={`${owner}/${repo}/${number}`}
+                />
+              )}
             </div>
 
             {/* Comments Section */}

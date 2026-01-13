@@ -33,6 +33,10 @@ export interface DiffViewerProps {
   onLineClick?: (lineInfo: LineClickInfo) => void;
   /** Map of line numbers to comment counts (for indicators) */
   lineCommentCounts?: Map<number, number>;
+  /** Currently focused line number for keyboard navigation */
+  focusedLine?: number | null;
+  /** Whether this file is the focused file for keyboard navigation */
+  isFocusedFile?: boolean;
 }
 
 /**
@@ -53,6 +57,8 @@ export function DiffViewer({
   className = '',
   onLineClick,
   lineCommentCounts,
+  focusedLine,
+  isFocusedFile = false,
 }: DiffViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -166,6 +172,37 @@ export function DiffViewer({
     };
   }, [patch, filename, onLineClick, lineCommentCounts]);
 
+  // Effect to highlight focused line
+  useEffect(() => {
+    if (!containerRef.current || !isFocusedFile || focusedLine === null || focusedLine === undefined) {
+      // Remove any existing focus highlights
+      const existing = containerRef.current?.querySelectorAll('.line-focused');
+      existing?.forEach((el) => el.classList.remove('line-focused'));
+      return;
+    }
+
+    // Remove existing focus highlights
+    const existing = containerRef.current.querySelectorAll('.line-focused');
+    existing.forEach((el) => el.classList.remove('line-focused'));
+
+    // Find and highlight the focused line
+    const lineNumbers = containerRef.current.querySelectorAll('.d2h-code-side-linenumber');
+    lineNumbers.forEach((lineNumEl) => {
+      const lineNumText = lineNumEl.textContent?.trim();
+      const lineNumber = lineNumText ? parseInt(lineNumText, 10) : null;
+
+      if (lineNumber === focusedLine) {
+        // Highlight the entire row
+        const parentRow = lineNumEl.closest('tr');
+        if (parentRow) {
+          parentRow.classList.add('line-focused');
+          // Scroll into view
+          parentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
+  }, [focusedLine, isFocusedFile]);
+
   // Handle empty patch
   if (!patch || patch.trim() === '') {
     return (
@@ -178,9 +215,9 @@ export function DiffViewer({
   }
 
   return (
-    <div className={`diff-viewer-wrapper ${className}`}>
+    <div className={`diff-viewer-wrapper ${isFocusedFile ? 'file-focused' : ''} ${className}`}>
       {/* Filename header */}
-      <div className="px-4 py-2 border-b bg-muted/50">
+      <div className={`px-4 py-2 border-b ${isFocusedFile ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-muted/50'}`}>
         <h3 className="text-sm font-mono font-medium">{filename}</h3>
       </div>
 
@@ -239,6 +276,20 @@ export function DiffViewer({
 
         .line-comment-badge:hover {
           @apply bg-blue-600;
+        }
+
+        /* Focused file indicator */
+        .file-focused {
+          @apply ring-2 ring-blue-500 ring-offset-2;
+        }
+
+        /* Focused line highlight */
+        .line-focused {
+          @apply bg-yellow-100 dark:bg-yellow-900/30;
+        }
+
+        .line-focused .d2h-code-side-linenumber {
+          @apply bg-yellow-200 dark:bg-yellow-800/40 text-yellow-800 dark:text-yellow-200;
         }
 
         .d2h-code-side-line {
