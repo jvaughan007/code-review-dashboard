@@ -29,12 +29,14 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 3. **Quality over speed** - Zero hallucinations, zero TypeScript errors, production-ready code
 4. **Pragmatic testing** - Test Zustand stores (pure functions) rather than heavily-mocked hooks
 
-**Current Test Coverage** (83 tests):
+**Current Test Coverage** (110 unit tests + 4 E2E):
 - `presence-store.ts`: 76.66% statements, 73.07% lines (13 tests)
 - `cursor-store.ts`: 100% statements, 100% lines (15 tests)
 - `comments-store.ts`: 87.93% statements, 87.27% lines (23 tests) - includes line comment selectors
 - `diff-viewer.tsx`: 75% statements, 73.33% lines (12 tests)
 - `use-keyboard-shortcuts.ts`: Full coverage (20 tests) - keyboard navigation
+- `focus-state-store.ts`: Full coverage (27 tests) - keyboard navigation focus state
+- E2E tests: 4 basic smoke tests (Playwright)
 
 **Evidence from SESSION_TRACKER.md**:
 - Implementing features without proper planning leads to bugs
@@ -1207,18 +1209,20 @@ Me: *Sprint Planning → User Stories → Requirements → Technical Design → 
 
 ---
 
-## Technical Debt Tracker (Sprint 3 Retro)
+## Technical Debt Tracker
 
-| Item | Severity | Added | Target Sprint |
-|------|----------|-------|---------------|
-| DiffViewer click handler E2E tests | Medium | Sprint 3 | Sprint 4 |
-| Focus state visual indicators | Medium | Sprint 3 | Sprint 4 |
-| LineCommentThread integration | High | Sprint 3 | Sprint 4 |
+| Item | Severity | Added | Status |
+|------|----------|-------|--------|
+| DiffViewer click handler E2E tests | Medium | Sprint 3 | ✅ Resolved Sprint 4 |
+| Focus state visual indicators | Medium | Sprint 3 | ✅ Resolved Sprint 4 |
+| LineCommentThread integration | High | Sprint 3 | ✅ Resolved Sprint 4 |
+| E2E auth fixture for full tests | Medium | Sprint 4 | Pending |
+| Scroll-to-focus debounce | Low | Sprint 4 | Pending |
 
 **Note**: Update this table as tech debt is identified or resolved.
 
 ---
 
-**Last Updated**: 2026-01-13 (Sprint 3 Complete - Line Comments & Keyboard Shortcuts)
+**Last Updated**: 2026-01-13 (Sprint 4 Complete - Integration & Keyboard Focus)
 **Maintained By**: Claude Code (Opus 4.5) + User collaboration
-**Enforcement**: AGILE process with pragmatic testing prevents bugs proven in Sessions #1-10
+**Enforcement**: AGILE process with pragmatic testing prevents bugs proven in Sessions #1-11
