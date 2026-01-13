@@ -29,11 +29,12 @@ This is a **real-time code review collaboration dashboard** built with Next.js 1
 3. **Quality over speed** - Zero hallucinations, zero TypeScript errors, production-ready code
 4. **Pragmatic testing** - Test Zustand stores (pure functions) rather than heavily-mocked hooks
 
-**Current Test Coverage** (55 tests):
+**Current Test Coverage** (83 tests):
 - `presence-store.ts`: 76.66% statements, 73.07% lines (13 tests)
 - `cursor-store.ts`: 100% statements, 100% lines (15 tests)
-- `comments-store.ts`: 87.93% statements, 87.27% lines (15 tests)
+- `comments-store.ts`: 87.93% statements, 87.27% lines (23 tests) - includes line comment selectors
 - `diff-viewer.tsx`: 75% statements, 73.33% lines (12 tests)
+- `use-keyboard-shortcuts.ts`: Full coverage (20 tests) - keyboard navigation
 
 **Evidence from SESSION_TRACKER.md**:
 - Implementing features without proper planning leads to bugs
@@ -1074,7 +1075,17 @@ Before writing ANY code, verify:
 |--------|----------|------------|-------|
 | Zustand stores | HIGH | LOW | Pure functions, easy to test |
 | Component rendering | MEDIUM | LOW | Structure and edge cases |
+| Hooks (pure logic) | MEDIUM | LOW | useKeyboardShortcuts - pure event handling |
 | Hooks with Supabase | LOW | HIGH | Require extensive mocking - defer or use E2E |
+| DOM manipulation | LOW | HIGH | Use Playwright E2E instead of unit tests |
+
+### E2E Testing Guidelines (Sprint 3 Retro)
+Use Playwright E2E tests for:
+- Components that use external HTML renderers (diff2html, prism.js)
+- Multi-user interaction flows (cursors, comments)
+- Full integration testing (line comments end-to-end)
+
+**Key Learning**: DOM manipulation components (like DiffViewer with click handlers) are hard to unit test. RTL can verify rendering, but click handlers on dynamically generated HTML need E2E tests.
 
 ### Decision Council Usage
 Use Decision Council when:
@@ -1192,9 +1203,22 @@ Me: *Sprint Planning → User Stories → Requirements → Technical Design → 
 - **Quality over speed** - Zero hallucinations, production-ready code
 - **Learn from mistakes** - Retrospectives capture lessons learned and apply to CLAUDE.md
 - **Decision Council** - Use for strategic decisions with 3+ options
+- **Integration before expansion** - Wire new features before building more (Sprint 3 Retro)
 
 ---
 
-**Last Updated**: 2026-01-13 (Sprint 2 Complete - Applied Retrospective Learnings)
+## Technical Debt Tracker (Sprint 3 Retro)
+
+| Item | Severity | Added | Target Sprint |
+|------|----------|-------|---------------|
+| DiffViewer click handler E2E tests | Medium | Sprint 3 | Sprint 4 |
+| Focus state visual indicators | Medium | Sprint 3 | Sprint 4 |
+| LineCommentThread integration | High | Sprint 3 | Sprint 4 |
+
+**Note**: Update this table as tech debt is identified or resolved.
+
+---
+
+**Last Updated**: 2026-01-13 (Sprint 3 Complete - Line Comments & Keyboard Shortcuts)
 **Maintained By**: Claude Code (Opus 4.5) + User collaboration
-**Enforcement**: AGILE process with pragmatic testing prevents bugs proven in Sessions #1-9
+**Enforcement**: AGILE process with pragmatic testing prevents bugs proven in Sessions #1-10
