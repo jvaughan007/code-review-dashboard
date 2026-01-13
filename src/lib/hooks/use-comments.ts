@@ -104,6 +104,12 @@ export function useComments({
           parent_comment_id: parentCommentId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          // Line-specific fields (null for PR-level comments)
+          file_path: null,
+          line_number: null,
+          line_type: null,
+          line_content: null,
+          // Optimistic UI flags
           isPending: true,
           tempId,
         };

@@ -10,8 +10,13 @@ import { devtools } from 'zustand/middleware';
  * - Rollback on error
  * - Supports threaded replies (max depth 3)
  *
- * Simplified for MVP: PR-level comments (not line-level)
+ * Sprint 3: Added line-specific comment support
+ * - Comments can be attached to specific lines in diffs
+ * - file_path, line_number, line_type, line_content fields
+ * - Selectors for line comments: getLineComments, getFileCommentSummary
  */
+
+export type LineType = 'addition' | 'deletion' | 'context';
 
 export interface Comment {
   id: string;
@@ -23,6 +28,12 @@ export interface Comment {
   body: string;
   created_at: string;
   updated_at: string;
+
+  // Line-specific comment fields (null = PR-level comment)
+  file_path: string | null;
+  line_number: number | null;
+  line_type: LineType | null;
+  line_content: string | null;
 
   // Optimistic UI flags (not in DB)
   isPending?: boolean; // Comment is being saved
@@ -49,6 +60,12 @@ interface CommentsState {
   getTopLevelComments: (prId: string) => Comment[];
   getReplies: (prId: string, parentId: string) => Comment[];
   getCommentCount: (prId: string) => number;
+
+  // Line-specific selectors
+  getLineComments: (prId: string, filePath: string, lineNumber: number) => Comment[];
+  getLineCommentCount: (prId: string, filePath: string, lineNumber: number) => number;
+  getFileCommentSummary: (prId: string, filePath: string) => Map<number, number>;
+  getPRLevelComments: (prId: string) => Comment[]; // Excludes line comments
 }
 
 export const useCommentsStore = create<CommentsState>()(
@@ -164,6 +181,45 @@ export const useCommentsStore = create<CommentsState>()(
 
       getCommentCount: (prId) => {
         return (get().commentsByPR.get(prId) || []).length;
+      },
+
+      // Line-specific selectors
+      getLineComments: (prId, filePath, lineNumber) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        return comments.filter(
+          (c) =>
+            c.file_path === filePath &&
+            c.line_number === lineNumber &&
+            !c.parent_comment_id // Top-level line comments only
+        );
+      },
+
+      getLineCommentCount: (prId, filePath, lineNumber) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        return comments.filter(
+          (c) => c.file_path === filePath && c.line_number === lineNumber
+        ).length;
+      },
+
+      getFileCommentSummary: (prId, filePath) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        const summary = new Map<number, number>();
+
+        comments.forEach((c) => {
+          if (c.file_path === filePath && c.line_number !== null) {
+            const current = summary.get(c.line_number) || 0;
+            summary.set(c.line_number, current + 1);
+          }
+        });
+
+        return summary;
+      },
+
+      getPRLevelComments: (prId) => {
+        const comments = get().commentsByPR.get(prId) || [];
+        return comments.filter(
+          (c) => c.file_path === null && c.line_number === null && !c.parent_comment_id
+        );
       },
     }),
     { name: 'CommentsStore' }

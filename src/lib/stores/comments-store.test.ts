@@ -19,6 +19,11 @@ const createMockComment = (overrides: Partial<Comment> = {}): Comment => ({
   body: 'This is a test comment',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
+  // Line-specific fields (null = PR-level comment)
+  file_path: null,
+  line_number: null,
+  line_type: null,
+  line_content: null,
   ...overrides,
 });
 
@@ -221,6 +226,156 @@ describe('Comments Store', () => {
       store.clearComments('owner/repo/1');
 
       expect(store.getComments('owner/repo/1')).toHaveLength(0);
+    });
+  });
+
+  // Line-specific comment tests (Sprint 3)
+  describe('getLineComments', () => {
+    it('should return comments for a specific line', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({
+          id: 'line-comment-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+          line_type: 'addition',
+        }),
+        createMockComment({
+          id: 'line-comment-2',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+          line_type: 'addition',
+        }),
+        createMockComment({
+          id: 'line-comment-3',
+          file_path: 'src/app.tsx',
+          line_number: 50,
+          line_type: 'deletion',
+        }),
+        createMockComment({ id: 'pr-comment', file_path: null, line_number: null }),
+      ]);
+
+      const result = store.getLineComments('owner/repo/1', 'src/app.tsx', 42);
+      expect(result).toHaveLength(2);
+      expect(result.every((c) => c.line_number === 42)).toBe(true);
+    });
+
+    it('should return empty array for line with no comments', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({ id: 'pr-comment', file_path: null, line_number: null }),
+      ]);
+
+      const result = store.getLineComments('owner/repo/1', 'src/app.tsx', 100);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should exclude replies from line comments', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({
+          id: 'line-comment-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+          parent_comment_id: null,
+        }),
+        createMockComment({
+          id: 'reply-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+          parent_comment_id: 'line-comment-1',
+        }),
+      ]);
+
+      const result = store.getLineComments('owner/repo/1', 'src/app.tsx', 42);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('line-comment-1');
+    });
+  });
+
+  describe('getLineCommentCount', () => {
+    it('should return count of all comments on a line including replies', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({
+          id: 'line-comment-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+        }),
+        createMockComment({
+          id: 'reply-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+          parent_comment_id: 'line-comment-1',
+        }),
+      ]);
+
+      expect(store.getLineCommentCount('owner/repo/1', 'src/app.tsx', 42)).toBe(2);
+    });
+
+    it('should return 0 for line with no comments', () => {
+      const store = useCommentsStore.getState();
+
+      expect(store.getLineCommentCount('owner/repo/1', 'src/app.tsx', 999)).toBe(0);
+    });
+  });
+
+  describe('getFileCommentSummary', () => {
+    it('should return map of line numbers to comment counts', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({ id: '1', file_path: 'src/app.tsx', line_number: 10 }),
+        createMockComment({ id: '2', file_path: 'src/app.tsx', line_number: 10 }),
+        createMockComment({ id: '3', file_path: 'src/app.tsx', line_number: 20 }),
+        createMockComment({ id: '4', file_path: 'src/other.tsx', line_number: 10 }),
+        createMockComment({ id: '5', file_path: null, line_number: null }),
+      ]);
+
+      const summary = store.getFileCommentSummary('owner/repo/1', 'src/app.tsx');
+
+      expect(summary.size).toBe(2);
+      expect(summary.get(10)).toBe(2);
+      expect(summary.get(20)).toBe(1);
+    });
+
+    it('should return empty map for file with no comments', () => {
+      const store = useCommentsStore.getState();
+
+      const summary = store.getFileCommentSummary('owner/repo/1', 'nonexistent.tsx');
+
+      expect(summary.size).toBe(0);
+    });
+  });
+
+  describe('getPRLevelComments', () => {
+    it('should return only PR-level comments (no file_path)', () => {
+      const store = useCommentsStore.getState();
+
+      store.setComments('owner/repo/1', [
+        createMockComment({ id: 'pr-1', file_path: null, line_number: null }),
+        createMockComment({ id: 'pr-2', file_path: null, line_number: null }),
+        createMockComment({
+          id: 'line-1',
+          file_path: 'src/app.tsx',
+          line_number: 42,
+        }),
+        createMockComment({
+          id: 'reply-1',
+          parent_comment_id: 'pr-1',
+          file_path: null,
+          line_number: null,
+        }),
+      ]);
+
+      const result = store.getPRLevelComments('owner/repo/1');
+
+      expect(result).toHaveLength(2);
+      expect(result.every((c) => c.file_path === null && c.parent_comment_id === null)).toBe(true);
     });
   });
 });

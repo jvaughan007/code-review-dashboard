@@ -18,10 +18,21 @@ import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markdown';
 
+export type LineClickInfo = {
+  filePath: string;
+  lineNumber: number;
+  lineType: 'addition' | 'deletion' | 'context';
+  lineContent: string;
+};
+
 export interface DiffViewerProps {
   patch: string;
   filename: string;
   className?: string;
+  /** Callback when a line number is clicked (for line comments) */
+  onLineClick?: (lineInfo: LineClickInfo) => void;
+  /** Map of line numbers to comment counts (for indicators) */
+  lineCommentCounts?: Map<number, number>;
 }
 
 /**
@@ -36,11 +47,20 @@ export interface DiffViewerProps {
  *
  * Uses diff2html for diff parsing and rendering
  */
-export function DiffViewer({ patch, filename, className = '' }: DiffViewerProps) {
+export function DiffViewer({
+  patch,
+  filename,
+  className = '',
+  onLineClick,
+  lineCommentCounts,
+}: DiffViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || !patch) return;
+
+    // Store cleanup functions for event listeners
+    const cleanupFns: (() => void)[] = [];
 
     try {
       // Generate diff HTML using diff2html
@@ -59,6 +79,72 @@ export function DiffViewer({ patch, filename, className = '' }: DiffViewerProps)
       codeBlocks.forEach((block) => {
         Prism.highlightElement(block);
       });
+
+      // Add click handlers to line numbers (for line comments)
+      if (onLineClick) {
+        const lineRows = containerRef.current.querySelectorAll('.d2h-code-side-line');
+        lineRows.forEach((row) => {
+          const lineNumberEl = row.querySelector('.d2h-code-side-linenumber');
+          const lineContentEl = row.querySelector('.d2h-code-side-line');
+
+          if (lineNumberEl) {
+            // Extract line number from element
+            const lineNumText = lineNumberEl.textContent?.trim();
+            const lineNumber = lineNumText ? parseInt(lineNumText, 10) : null;
+
+            if (lineNumber && !isNaN(lineNumber)) {
+              // Determine line type from parent row classes
+              const parentRow = lineNumberEl.closest('tr');
+              let lineType: 'addition' | 'deletion' | 'context' = 'context';
+              if (parentRow?.classList.contains('d2h-ins')) {
+                lineType = 'addition';
+              } else if (parentRow?.classList.contains('d2h-del')) {
+                lineType = 'deletion';
+              }
+
+              // Get line content
+              const lineContent = lineContentEl?.textContent?.trim() || '';
+
+              // Add clickable styling
+              (lineNumberEl as HTMLElement).classList.add('line-number-clickable');
+
+              // Add click handler
+              const handleClick = () => {
+                onLineClick({
+                  filePath: filename,
+                  lineNumber,
+                  lineType,
+                  lineContent,
+                });
+              };
+
+              lineNumberEl.addEventListener('click', handleClick);
+              cleanupFns.push(() => lineNumberEl.removeEventListener('click', handleClick));
+            }
+          }
+        });
+      }
+
+      // Add comment count indicators
+      if (lineCommentCounts && lineCommentCounts.size > 0) {
+        const lineNumbers = containerRef.current.querySelectorAll('.d2h-code-side-linenumber');
+        lineNumbers.forEach((lineNumEl) => {
+          const lineNumText = lineNumEl.textContent?.trim();
+          const lineNumber = lineNumText ? parseInt(lineNumText, 10) : null;
+
+          if (lineNumber && !isNaN(lineNumber)) {
+            const commentCount = lineCommentCounts.get(lineNumber);
+            if (commentCount && commentCount > 0) {
+              // Add comment indicator badge
+              const badge = document.createElement('span');
+              badge.className = 'line-comment-badge';
+              badge.textContent = commentCount.toString();
+              badge.title = `${commentCount} comment${commentCount > 1 ? 's' : ''}`;
+              lineNumEl.appendChild(badge);
+            }
+          }
+        });
+      }
     } catch (error) {
       console.error('Error rendering diff:', error);
 
@@ -73,7 +159,12 @@ export function DiffViewer({ patch, filename, className = '' }: DiffViewerProps)
         `;
       }
     }
-  }, [patch, filename]);
+
+    // Cleanup event listeners on unmount or re-render
+    return () => {
+      cleanupFns.forEach((fn) => fn());
+    };
+  }, [patch, filename, onLineClick, lineCommentCounts]);
 
   // Handle empty patch
   if (!patch || patch.trim() === '') {
@@ -120,7 +211,34 @@ export function DiffViewer({ patch, filename, className = '' }: DiffViewerProps)
         }
 
         .d2h-code-side-linenumber {
-          @apply text-muted-foreground bg-muted/30;
+          @apply text-muted-foreground bg-muted/30 relative;
+        }
+
+        /* Clickable line numbers for comments */
+        .line-number-clickable {
+          @apply cursor-pointer transition-colors duration-150;
+        }
+
+        .line-number-clickable:hover {
+          @apply bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400;
+        }
+
+        .line-number-clickable:hover::before {
+          content: '+';
+          @apply absolute left-1 text-blue-500 font-bold text-xs;
+        }
+
+        /* Comment count badge */
+        .line-comment-badge {
+          @apply absolute right-1 top-1/2 -translate-y-1/2;
+          @apply inline-flex items-center justify-center;
+          @apply min-w-4 h-4 px-1 text-xs font-medium;
+          @apply bg-blue-500 text-white rounded-full;
+          @apply cursor-pointer;
+        }
+
+        .line-comment-badge:hover {
+          @apply bg-blue-600;
         }
 
         .d2h-code-side-line {
