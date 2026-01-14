@@ -1,13 +1,14 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# ===========================================
+# BUILD & DEPENDENCIES
+# ===========================================
+
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-
-# testing
-/coverage
 
 # next.js
 /.next/
@@ -16,22 +17,116 @@
 # production
 /build
 
-# misc
-.DS_Store
-*.pem
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# ===========================================
+# ENVIRONMENT & SECRETS
+# ===========================================
 
 # local env files
 .env*.local
 .env
 
+# keys and credentials
+*.pem
+
+# ===========================================
+# IDE & SYSTEM FILES
+# ===========================================
+
+# macOS
+.DS_Store
+*.swp
+*.swo
+
+# VSCode
+.vscode/
+
+# JetBrains
+.idea/
+
+# Claude Code
+.claude/
+
+# ===========================================
+# DEBUG & LOGS
+# ===========================================
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===========================================
+# DEPLOYMENT
+# ===========================================
+
 # vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ===========================================
+# AGILE PROCESS DOCUMENTATION
+# (Internal planning docs - not app code)
+# ===========================================
+
+# Sprint planning artifacts
+user_stories_*.md
+refined_requirements_*.md
+technical_design_sprint_*.md
+test_strategy_*.md
+sprint_plan_*.md
+sprint_*_review.md
+sprint_*_retrospective.md
+
+# Session and planning tracking
+SESSION_TRACKER.md
+SOURCE_OF_TRUTH.md
+WORKFLOW_DIAGRAM.md
+WEEK*.md
+
+# Agent consultation docs
+AGENT_*.md
+CONSULTATION_SUMMARY.md
+QUICK_START_*.md
+README_AGENT_*.md
+README_CONSULTATION.md
+SPECIALIST_*.md
+CURSOR_TRACKING_*.md
+DECISION_CHECKPOINT_*.md
+CHROME_EXTENSION_*.md
+AGILE_VALIDATION_*.md
+decision_council_*.md
+
+# Decision and recommendation directories
+/decisions/
+/recommendations/
+/prompts/
+/docs/
+
+# Architecture and cleanup docs
+ARCHITECTURE.md
+CLEANUP_DECISION_SUMMARY.md
+MVP_COMPLETION_SUMMARY.md
+DASHBOARD_ASSESSMENT_*.md
+ACTIVITY_FEED_PLAN.md
+RLS_POLICY_FIX_README.md
+MIGRATION_INSTRUCTIONS.md
+
+# Claude Code local instructions
+CLAUDE.md
+
+# Supabase dev/test files (keep migrations)
+supabase/cleanup_and_recovery.sql
+supabase/diagnostic_query.sql
+supabase/test_migration.sql
+supabase/MIGRATION_CLEANUP_GUIDE.md
+
+# Dev scripts (not needed in repo)
+/scripts/
