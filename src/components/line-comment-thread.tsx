@@ -232,52 +232,51 @@ export function LineCommentThread({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card rounded-lg border shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">
-              Comments on line {lineInfo.lineNumber}
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      {/* Modal - Full width on mobile, centered on desktop */}
+      <div className="bg-card rounded-t-xl sm:rounded-lg border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+        {/* Header - Touch friendly close button */}
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b">
+          <div className="flex items-center gap-2 min-w-0">
+            <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            <h2 className="text-base sm:text-lg font-semibold truncate">
+              Line {lineInfo.lineNumber}
             </h2>
             {lineComments.length > 0 && (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground flex-shrink-0">
                 ({lineComments.length})
               </span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md hover:bg-muted transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md hover:bg-muted transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Line context */}
-        <div className="px-4 py-3 border-b">
-          <div className="flex items-start gap-2">
+        {/* Line context - Responsive */}
+        <div className="px-3 sm:px-4 py-2 sm:py-3 border-b">
+          <div className="flex flex-wrap items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${lineTypeInfo.bgColor} ${lineTypeInfo.textColor}`}>
               <LineTypeIcon className="h-3 w-3" />
               <span>{lineTypeInfo.label}</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground font-mono truncate">
-                {lineInfo.filePath}
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground font-mono truncate max-w-full">
+              {lineInfo.filePath}
+            </p>
           </div>
           {lineInfo.lineContent && (
-            <pre className="mt-2 text-sm font-mono bg-muted/50 p-2 rounded overflow-x-auto">
+            <pre className="mt-2 text-xs sm:text-sm font-mono bg-muted/50 p-2 rounded overflow-x-auto max-w-full">
               <code>{lineInfo.lineContent}</code>
             </pre>
           )}
         </div>
 
-        {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Scrollable content area - More padding on mobile for touch */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
           {/* Comment input */}
           {currentUserId ? (
             <div className="rounded-lg border bg-muted/30 p-4">
@@ -324,8 +323,8 @@ export function LineCommentThread({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-4 py-2 border-t text-xs text-center text-muted-foreground">
+        {/* Footer - Safe area padding for mobile */}
+        <div className="px-3 sm:px-4 py-3 sm:py-2 border-t text-xs text-center text-muted-foreground pb-safe">
           Comments sync automatically
         </div>
       </div>

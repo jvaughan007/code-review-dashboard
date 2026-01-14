@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DiffViewer, type LineClickInfo } from "./diff-viewer";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { SmartDiffViewer, type LineClickInfo } from "./smart-diff-viewer";
 import { LineCommentThread } from "./line-comment-thread";
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help";
 import { useComments } from "@/lib/hooks/use-comments";
@@ -36,6 +37,31 @@ interface FilesSectionProps {
 export function FilesSection({ files, prId }: FilesSectionProps) {
   const [selectedLine, setSelectedLine] = useState<LineClickInfo | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  // Track collapsed state per file - default: first 3 files expanded, rest collapsed
+  const [collapsedFiles, setCollapsedFiles] = useState<Set<number>>(() => {
+    const collapsed = new Set<number>();
+    files.forEach((_, index) => {
+      if (index >= 3) collapsed.add(index);
+    });
+    return collapsed;
+  });
+
+  // Toggle file collapsed state
+  const toggleFileCollapsed = (index: number) => {
+    setCollapsedFiles((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  // Collapse/expand all files
+  const expandAll = () => setCollapsedFiles(new Set());
+  const collapseAll = () => setCollapsedFiles(new Set(files.map((_, i) => i)));
 
   // Initialize comment polling for this PR
   useComments({
@@ -110,36 +136,84 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
 
   return (
     <>
-      <div className="divide-y">
-        {files.map((file, index) => (
-          <div key={index} className="p-4">
-            {/* File header */}
-            <div className="mb-2 flex items-center justify-between">
-              <div className="font-mono text-sm">{file.filename}</div>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="text-green-600">+{file.additions}</span>
-                <span className="text-red-600">-{file.deletions}</span>
-                <span className="rounded-full bg-muted px-2 py-1 text-xs">
-                  {file.status}
-                </span>
-              </div>
-            </div>
+      {/* Expand/Collapse All Controls - Mobile friendly */}
+      <div className="p-3 border-b flex items-center justify-between bg-muted/30">
+        <span className="text-sm text-muted-foreground">
+          {files.length} file{files.length !== 1 ? "s" : ""} changed
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={expandAll}
+            className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
+            aria-label="Expand all files"
+          >
+            Expand All
+          </button>
+          <button
+            onClick={collapseAll}
+            className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
+            aria-label="Collapse all files"
+          >
+            Collapse All
+          </button>
+        </div>
+      </div>
 
-            {/* Diff viewer with line comment and focus support */}
-            {file.patch && (
-              <div className="mt-3">
-                <DiffViewer
-                  patch={file.patch}
-                  filename={file.filename}
-                  onLineClick={handleLineClick}
-                  lineCommentCounts={getFileCommentSummary(prId, file.filename)}
-                  focusedLine={currentFileIndex === index ? currentLineNumber : null}
-                  isFocusedFile={currentFileIndex === index}
-                />
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="divide-y">
+        {files.map((file, index) => {
+          const isCollapsed = collapsedFiles.has(index);
+          const isFocused = currentFileIndex === index;
+
+          return (
+            <div key={index} className={`${isFocused ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}>
+              {/* File header - Touch friendly tap target */}
+              <button
+                onClick={() => toggleFileCollapsed(index)}
+                className="w-full min-h-[44px] p-3 sm:p-4 flex items-center gap-2 hover:bg-muted/50 transition-colors text-left"
+                aria-expanded={!isCollapsed}
+                aria-controls={`file-${index}-content`}
+              >
+                {/* Chevron icon */}
+                <span className="flex-shrink-0 text-muted-foreground">
+                  {isCollapsed ? (
+                    <ChevronRight className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </span>
+
+                {/* File info - Responsive layout */}
+                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                  <span className="font-mono text-sm truncate">{file.filename}</span>
+                  <div className="flex items-center gap-2 sm:gap-3 text-sm flex-shrink-0">
+                    <span className="text-green-600">+{file.additions}</span>
+                    <span className="text-red-600">-{file.deletions}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs hidden sm:inline">
+                      {file.status}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Diff viewer - Collapsible with horizontal scroll */}
+              {!isCollapsed && file.patch && (
+                <div
+                  id={`file-${index}-content`}
+                  className="px-3 sm:px-4 pb-4 overflow-x-auto"
+                >
+                  <SmartDiffViewer
+                    patch={file.patch}
+                    filename={file.filename}
+                    onLineClick={handleLineClick}
+                    lineCommentCounts={getFileCommentSummary(prId, file.filename)}
+                    focusedLine={currentFileIndex === index ? currentLineNumber : null}
+                    isFocusedFile={currentFileIndex === index}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Keyboard shortcuts hint */}
