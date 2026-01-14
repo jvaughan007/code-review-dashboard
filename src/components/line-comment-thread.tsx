@@ -38,6 +38,7 @@ export function LineCommentThread({
     getLineComments,
     getReplies,
     addComment,
+    updateComment,
     deleteComment,
     replaceOptimistic,
     markError,
@@ -174,6 +175,22 @@ export function LineCommentThread({
     }
   };
 
+  // Handle edit
+  const handleEdit = async (commentId: string, newBody: string) => {
+    // Optimistic update
+    updateComment(commentId, newBody);
+
+    const { error } = await supabase
+      .from("comments")
+      .update({ body: newBody, updated_at: new Date().toISOString() })
+      .eq("id", commentId);
+
+    if (error) {
+      console.error("Error editing comment:", error);
+      throw error;
+    }
+  };
+
   // Get line type icon and color
   const getLineTypeInfo = () => {
     switch (lineInfo.lineType) {
@@ -287,6 +304,7 @@ export function LineCommentThread({
                   currentUserId={currentUserId}
                   onReply={handleReply}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                   getReplies={(parentId) => getReplies(prId, parentId)}
                   depth={0}
                   maxDepth={3}

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, Reply, AlertCircle, Loader2 } from "lucide-react";
+import { Trash2, Reply, AlertCircle, Loader2, Pencil, X, Check } from "lucide-react";
 import { CommentInput } from "./comment-input";
+import { MarkdownPreview } from "./markdown-preview";
 import type { Comment } from "@/lib/stores/comments-store";
 
 interface CommentItemProps {
@@ -11,6 +12,7 @@ interface CommentItemProps {
   currentUserId?: string;
   onReply: (body: string, parentCommentId: string) => Promise<void>;
   onDelete: (commentId: string) => Promise<void>;
+  onEdit?: (commentId: string, newBody: string) => Promise<void>;
   getReplies: (commentId: string) => Comment[];
   depth?: number;
   maxDepth?: number;
@@ -23,23 +25,29 @@ interface CommentItemProps {
  * - Avatar and username display
  * - Relative timestamp (e.g., "2 minutes ago")
  * - Reply button (disabled at max depth)
+ * - Edit button (only for comment author)
  * - Delete button (only for comment author)
- * - Inline reply form
+ * - Inline reply and edit forms
  * - Error state display
  * - Pending/optimistic UI indicator
  * - Nested replies with indentation
+ * - Markdown rendering
  */
 export function CommentItem({
   comment,
   currentUserId,
   onReply,
   onDelete,
+  onEdit,
   getReplies,
   depth = 0,
   maxDepth = 3,
 }: CommentItemProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editBody, setEditBody] = useState(comment.body);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const isAuthor = currentUserId === comment.user_id;
   const canReply = depth < maxDepth - 1; // Stop at depth 2 (0, 1, 2)
@@ -61,6 +69,35 @@ export function CommentItem({
       console.error("Failed to delete comment:", error);
       alert("Failed to delete comment. Please try again.");
       setIsDeleting(false);
+    }
+  };
+
+  const handleStartEdit = () => {
+    setEditBody(comment.body);
+    setIsEditing(true);
+    setShowReplyForm(false); // Close reply form if open
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditBody(comment.body);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!onEdit || !editBody.trim() || editBody === comment.body) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      await onEdit(comment.id, editBody.trim());
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to edit comment:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -112,20 +149,33 @@ export function CommentItem({
             </div>
           </div>
 
-          {/* Delete button (only for author) */}
-          {isAuthor && !isPending && (
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Delete comment"
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
+          {/* Action buttons (only for author) */}
+          {isAuthor && !isPending && !isEditing && (
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Edit button */}
+              {onEdit && (
+                <button
+                  onClick={handleStartEdit}
+                  className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                  title="Edit comment"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
               )}
-            </button>
+              {/* Delete button */}
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete comment"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           )}
         </div>
 
@@ -137,13 +187,52 @@ export function CommentItem({
           </div>
         )}
 
-        {/* Comment body */}
-        <div className="text-sm whitespace-pre-wrap break-words pl-11">
-          {comment.body}
+        {/* Comment body - rendered as markdown OR edit form */}
+        <div className="pl-11">
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                className="w-full rounded-md border border-input bg-background p-3 text-sm resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary"
+                autoFocus
+                disabled={isSavingEdit}
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Supports markdown formatting
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={isSavingEdit}
+                    className="px-3 py-1.5 text-sm rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <X className="h-3 w-3" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    disabled={isSavingEdit || !editBody.trim()}
+                    className="px-3 py-1.5 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    {isSavingEdit ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <MarkdownPreview content={comment.body} className="break-words" />
+          )}
         </div>
 
         {/* Actions: Reply button */}
-        {!isPending && !hasError && (
+        {!isPending && !hasError && !isEditing && (
           <div className="mt-2 pl-11">
             {canReply ? (
               <button
@@ -185,7 +274,8 @@ export function CommentItem({
               currentUserId={currentUserId}
               onReply={onReply}
               onDelete={onDelete}
-              getReplies={getReplies} // Pass down getReplies for recursive threading
+              onEdit={onEdit}
+              getReplies={getReplies}
               depth={depth + 1}
               maxDepth={maxDepth}
             />

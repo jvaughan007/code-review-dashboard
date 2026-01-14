@@ -6,6 +6,40 @@ import 'diff2html/bundles/css/diff2html.min.css';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 
+/**
+ * Check if an element is visible in the viewport
+ */
+function isElementInViewport(element: HTMLElement): boolean {
+  const rect = element.getBoundingClientRect();
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  // Element is considered visible if at least 50% is in viewport
+  const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+  const elementHeight = rect.height;
+
+  return visibleHeight >= elementHeight * 0.5;
+}
+
+/**
+ * Debounce utility for scroll operations
+ */
+function debounce<T extends (...args: Parameters<T>) => void>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      fn(...args);
+      timeoutId = null;
+    }, delay);
+  };
+}
+
 // Import common language syntaxes
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-javascript';
@@ -172,6 +206,19 @@ export function DiffViewer({
     };
   }, [patch, filename, onLineClick, lineCommentCounts]);
 
+  // Debounced scroll function - only scrolls if element is out of viewport
+  const debouncedScrollRef = useRef<((element: HTMLElement) => void) | null>(null);
+
+  // Initialize debounced scroll on mount
+  useEffect(() => {
+    debouncedScrollRef.current = debounce((element: HTMLElement) => {
+      // Only scroll if element is not already visible
+      if (!isElementInViewport(element)) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100); // 100ms debounce for rapid navigation
+  }, []);
+
   // Effect to highlight focused line
   useEffect(() => {
     if (!containerRef.current || !isFocusedFile || focusedLine === null || focusedLine === undefined) {
@@ -193,11 +240,13 @@ export function DiffViewer({
 
       if (lineNumber === focusedLine) {
         // Highlight the entire row
-        const parentRow = lineNumEl.closest('tr');
+        const parentRow = lineNumEl.closest('tr') as HTMLElement | null;
         if (parentRow) {
           parentRow.classList.add('line-focused');
-          // Scroll into view
-          parentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Smart scroll: debounced and only if out of viewport
+          if (debouncedScrollRef.current) {
+            debouncedScrollRef.current(parentRow);
+          }
         }
       }
     });
