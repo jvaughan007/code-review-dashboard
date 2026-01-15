@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeToggle } from "./theme-toggle";
+import { SettingsDropdown } from "./settings-dropdown";
 import Link from "next/link";
 
 interface HeaderProps {
@@ -42,7 +43,10 @@ export function Header({
           </Link>
         </div>
 
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <SettingsDropdown />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
