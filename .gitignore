@@ -85,6 +85,10 @@ test_strategy_*.md
 sprint_plan_*.md
 sprint_*_review.md
 sprint_*_retrospective.md
+sprint_*_user_stories.md
+sprint_*_risk_assessment.md
+sprint_*_innovation_options.md
+sprint_roadmap_*.md
 
 # Session and planning tracking
 SESSION_TRACKER.md

@@ -5,10 +5,13 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { SmartDiffViewer, type LineClickInfo } from "./smart-diff-viewer";
 import { LineCommentThread } from "./line-comment-thread";
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help";
+import { FileProgressCheckbox } from "./file-progress-checkbox";
+import { PRProgressBar } from "./pr-progress-bar";
 import { useComments } from "@/lib/hooks/use-comments";
 import { useCommentsStore } from "@/lib/stores/comments-store";
 import { useFocusStateStore } from "@/lib/stores/focus-state-store";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useReviewProgress } from "@/lib/hooks/use-review-progress";
 
 interface FileChange {
   filename: string;
@@ -73,6 +76,20 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
   // Get comment summary function from store
   const { getFileCommentSummary } = useCommentsStore();
 
+  // Initialize review progress tracking
+  const {
+    getFileStatus,
+    getPRProgress,
+    toggleFileCompleted,
+  } = useReviewProgress({
+    prId,
+    enabled: true,
+    pollingInterval: 5000,
+  });
+
+  // Get current progress stats
+  const progressStats = getPRProgress(files.length);
+
   // Focus state for keyboard navigation
   const {
     currentFileIndex,
@@ -136,26 +153,32 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
 
   return (
     <>
-      {/* Expand/Collapse All Controls - Mobile friendly */}
-      <div className="p-3 border-b flex items-center justify-between bg-muted/30">
-        <span className="text-sm text-muted-foreground">
-          {files.length} file{files.length !== 1 ? "s" : ""} changed
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={expandAll}
-            className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
-            aria-label="Expand all files"
-          >
-            Expand All
-          </button>
-          <button
-            onClick={collapseAll}
-            className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
-            aria-label="Collapse all files"
-          >
-            Collapse All
-          </button>
+      {/* Progress bar and controls header */}
+      <div className="p-3 border-b bg-muted/30 space-y-3">
+        {/* Progress bar */}
+        <PRProgressBar progress={progressStats} size="md" />
+
+        {/* File count and controls */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {files.length} file{files.length !== 1 ? "s" : ""} changed
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={expandAll}
+              className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
+              aria-label="Expand all files"
+            >
+              Expand All
+            </button>
+            <button
+              onClick={collapseAll}
+              className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
+              aria-label="Collapse all files"
+            >
+              Collapse All
+            </button>
+          </div>
         </div>
       </div>
 
@@ -167,23 +190,27 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
           return (
             <div key={index} className={`${isFocused ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}>
               {/* File header - Touch friendly tap target */}
-              <button
-                onClick={() => toggleFileCollapsed(index)}
-                className="w-full min-h-[44px] p-3 sm:p-4 flex items-center gap-2 hover:bg-muted/50 transition-colors text-left"
-                aria-expanded={!isCollapsed}
-                aria-controls={`file-${index}-content`}
-              >
-                {/* Chevron icon */}
-                <span className="flex-shrink-0 text-muted-foreground">
+              <div className="flex items-center min-h-[44px] p-3 sm:p-4 gap-2 hover:bg-muted/50 transition-colors">
+                {/* Collapse toggle button */}
+                <button
+                  onClick={() => toggleFileCollapsed(index)}
+                  className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1 -m-1"
+                  aria-expanded={!isCollapsed}
+                  aria-controls={`file-${index}-content`}
+                  aria-label={isCollapsed ? "Expand file" : "Collapse file"}
+                >
                   {isCollapsed ? (
                     <ChevronRight className="h-5 w-5" />
                   ) : (
                     <ChevronDown className="h-5 w-5" />
                   )}
-                </span>
+                </button>
 
-                {/* File info - Responsive layout */}
-                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                {/* File info - Clickable to toggle collapse */}
+                <button
+                  onClick={() => toggleFileCollapsed(index)}
+                  className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 text-left"
+                >
                   <span className="font-mono text-sm truncate">{file.filename}</span>
                   <div className="flex items-center gap-2 sm:gap-3 text-sm flex-shrink-0">
                     <span className="text-green-600">+{file.additions}</span>
@@ -192,8 +219,18 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
                       {file.status}
                     </span>
                   </div>
+                </button>
+
+                {/* Progress checkbox - separate click target */}
+                <div className="flex-shrink-0">
+                  <FileProgressCheckbox
+                    filePath={file.filename}
+                    status={getFileStatus(file.filename)}
+                    onStatusChange={() => toggleFileCompleted(file.filename)}
+                    size="sm"
+                  />
                 </div>
-              </button>
+              </div>
 
               {/* Diff viewer - Collapsible with horizontal scroll */}
               {!isCollapsed && file.patch && (
