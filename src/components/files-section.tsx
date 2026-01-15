@@ -7,6 +7,7 @@ import { LineCommentThread } from "./line-comment-thread";
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help";
 import { FileProgressCheckbox } from "./file-progress-checkbox";
 import { PRProgressBar } from "./pr-progress-bar";
+import { FileSuggestionsSummary } from "./file-suggestions-summary";
 import { useComments } from "@/lib/hooks/use-comments";
 import { useCommentsStore } from "@/lib/stores/comments-store";
 import { useFocusStateStore } from "@/lib/stores/focus-state-store";
@@ -220,6 +221,16 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
                     </span>
                   </div>
                 </button>
+
+                {/* Pattern suggestions summary */}
+                {file.patch && (
+                  <div className="flex-shrink-0">
+                    <FileSuggestionsSummary
+                      patch={file.patch}
+                      filename={file.filename}
+                    />
+                  </div>
+                )}
 
                 {/* Progress checkbox - separate click target */}
                 <div className="flex-shrink-0">
