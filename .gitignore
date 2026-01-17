@@ -89,6 +89,8 @@ sprint_*_user_stories.md
 sprint_*_risk_assessment.md
 sprint_*_innovation_options.md
 sprint_roadmap_*.md
+acceptance_review_sprint_*.md
+consolidated_retrospective_sprint_*.md
 
 # Session and planning tracking
 SESSION_TRACKER.md
