@@ -5,6 +5,8 @@ import { Loader2, ArrowDown } from 'lucide-react';
 import { useActivities } from '@/lib/hooks/use-activities';
 import { ActivityItem } from './activity-item';
 import { groupActivities } from '@/lib/utils/activity-utils';
+import { filterActivitiesByPreferences } from '@/lib/utils/activity-filter';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { cn } from '@/lib/utils';
 
 interface ActivityFeedProps {
@@ -24,7 +26,14 @@ export function ActivityFeed({ prId }: ActivityFeedProps) {
     pollingInterval: 3000,
   });
 
-  const groupedActivities = groupActivities(activities);
+  // Get notification settings for filtering - Sprint 8 Story #1
+  const notificationSettings = useSettingsStore((state) => state.notifications);
+
+  // Group activities and filter based on user preferences
+  const groupedActivities = filterActivitiesByPreferences(
+    groupActivities(activities),
+    notificationSettings
+  );
 
   // Track scroll position
   const handleScroll = () => {
