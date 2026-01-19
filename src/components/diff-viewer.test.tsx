@@ -32,8 +32,9 @@ describe('DiffViewer Component', () => {
 
       render(<DiffViewer patch={patch} filename="src/utils/helper.ts" />);
 
-      // Filename should be visible in the header
-      expect(screen.getByText('src/utils/helper.ts')).toBeInTheDocument();
+      // Filename should be visible (may appear in both our header and diff2html output)
+      const filenameElements = screen.getAllByText('src/utils/helper.ts');
+      expect(filenameElements.length).toBeGreaterThan(0);
     });
 
     it('should handle empty patch gracefully', () => {

@@ -114,7 +114,7 @@ export function NotificationSettings({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="text-gray-500 dark:text-gray-400" size={20} />
+          <Bell className="text-gray-700" size={20} />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Notification Preferences
           </h3>
@@ -123,7 +123,7 @@ export function NotificationSettings({
           onClick={resetToDefaults}
           className="
             flex items-center gap-1.5 px-3 py-1.5
-            text-sm text-gray-600 dark:text-gray-400
+            text-sm text-gray-800
             hover:text-gray-900 dark:hover:text-gray-100
             hover:bg-gray-100 dark:hover:bg-gray-800
             rounded-lg transition-colors
@@ -137,7 +137,7 @@ export function NotificationSettings({
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-700">
           <Loader2 size={14} className="animate-spin" />
           Loading settings...
         </div>
@@ -222,7 +222,7 @@ function ToggleRow({
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {label}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-700">
             {description}
           </p>
         </div>

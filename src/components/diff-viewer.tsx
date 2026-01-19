@@ -107,8 +107,15 @@ export function DiffViewer({
     const cleanupFns: (() => void)[] = [];
 
     try {
+      // Format the patch with proper diff headers for diff2html
+      // GitHub API returns just the patch content, but diff2html needs full unified diff format
+      const formattedPatch = `diff --git a/${filename} b/${filename}
+--- a/${filename}
++++ b/${filename}
+${patch}`;
+
       // Generate diff HTML using diff2html
-      const diffHtml = Diff2Html.html(patch, {
+      const diffHtml = Diff2Html.html(formattedPatch, {
         drawFileList: false,
         matching: 'lines',
         outputFormat: viewMode === 'unified' ? 'line-by-line' : 'side-by-side',

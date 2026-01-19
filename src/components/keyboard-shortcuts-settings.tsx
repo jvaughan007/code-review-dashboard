@@ -109,7 +109,7 @@ export function KeyboardShortcutsSettings({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Keyboard className="text-gray-500 dark:text-gray-400" size={20} />
+          <Keyboard className="text-gray-700" size={20} />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Keyboard Shortcuts
           </h3>
@@ -118,7 +118,7 @@ export function KeyboardShortcutsSettings({
           onClick={resetToDefaults}
           className="
             flex items-center gap-1.5 px-3 py-1.5
-            text-sm text-gray-600 dark:text-gray-400
+            text-sm text-gray-800
             hover:text-gray-900 dark:hover:text-gray-100
             hover:bg-gray-100 dark:hover:bg-gray-800
             rounded-lg transition-colors
@@ -160,7 +160,7 @@ export function KeyboardShortcutsSettings({
             <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Press a key combination
             </h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-sm text-gray-700 mt-2">
               Recording shortcut for{" "}
               <span className="font-medium">{recordingAction}</span>
             </p>
@@ -168,7 +168,7 @@ export function KeyboardShortcutsSettings({
               onClick={stopRecording}
               className="
                 mt-4 px-4 py-2
-                text-sm text-gray-600 dark:text-gray-400
+                text-sm text-gray-800
                 hover:text-gray-900 dark:hover:text-gray-100
                 hover:bg-gray-100 dark:hover:bg-gray-700
                 rounded-lg transition-colors
