@@ -92,12 +92,12 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
             absolute right-0 top-full mt-2
             w-[360px] sm:w-[420px]
             max-h-[calc(100vh-100px)]
-            bg-white dark:bg-gray-950
             rounded-xl shadow-lg
             border border-border
             overflow-hidden
             z-50
           "
+          style={{ backgroundColor: 'hsl(var(--background))' }}
           role="dialog"
           aria-label="Settings panel"
         >

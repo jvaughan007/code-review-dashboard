@@ -2,9 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as Diff2Html from 'diff2html';
-import 'diff2html/bundles/css/diff2html.min.css';
 import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css';
+// CSS imports moved to globals.css for reliable bundling
 
 /**
  * Check if an element is visible in the viewport

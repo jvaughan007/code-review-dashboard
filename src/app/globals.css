@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "diff2html/bundles/css/diff2html.min.css";
+@import "prismjs/themes/prism-tomorrow.css";
 
 :root {
   --background: 0 0% 100%;
@@ -128,6 +130,57 @@ a:focus-visible,
 /* ===========================================
    DIFF VIEWER STYLES (diff2html overrides)
    =========================================== */
+
+/* Base diff2html styles (fallback if CSS import fails) */
+.d2h-wrapper {
+  text-align: left;
+}
+
+.d2h-file-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-bottom: 1em;
+}
+
+.d2h-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.d2h-diff-tbody tr {
+  border: none;
+}
+
+.d2h-diff-tbody td {
+  padding: 0;
+  vertical-align: top;
+}
+
+.d2h-code-line {
+  padding: 0 8px;
+  white-space: pre;
+}
+
+.d2h-code-line-ctn {
+  padding: 0 8px;
+  white-space: pre;
+}
+
+.d2h-code-side-linenumber {
+  width: 40px;
+  padding: 0 8px;
+  text-align: right;
+  user-select: none;
+  border-right: 1px solid #eee;
+}
+
+.d2h-code-line-prefix {
+  width: 20px;
+  padding: 0 4px;
+  user-select: none;
+}
 
 /* Custom diff viewer styles */
 .diff-viewer-wrapper {
