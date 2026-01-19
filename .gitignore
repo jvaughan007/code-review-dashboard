@@ -125,6 +125,8 @@ DASHBOARD_ASSESSMENT_*.md
 ACTIVITY_FEED_PLAN.md
 RLS_POLICY_FIX_README.md
 MIGRATION_INSTRUCTIONS.md
+SETUP.md
+TESTING.md
 
 # Claude Code local instructions
 CLAUDE.md
@@ -134,6 +136,7 @@ supabase/cleanup_and_recovery.sql
 supabase/diagnostic_query.sql
 supabase/test_migration.sql
 supabase/MIGRATION_CLEANUP_GUIDE.md
+supabase/README.md
 
 # Dev scripts (not needed in repo)
 /scripts/
