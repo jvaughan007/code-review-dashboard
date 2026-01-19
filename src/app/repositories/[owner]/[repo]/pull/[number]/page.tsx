@@ -1,6 +1,7 @@
 import {
   getPullRequest,
   getPullRequestFiles,
+  getRepositoryPullRequests,
 } from "@/lib/github/client";
 import { GitPullRequest, FileCode, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +10,7 @@ import { PRDetailClient } from "@/components/pr-detail-client";
 import { FilesSection } from "@/components/files-section";
 import { CommentThread } from "@/components/comment-thread";
 import { ActivityFeedContainer } from "@/components/activity-feed/activity-feed-container";
+import { PRSwitcher } from "@/components/pr-switcher";
 
 interface PageProps {
   params: Promise<{
@@ -24,12 +26,14 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
 
   let pullRequest;
   let files: Awaited<ReturnType<typeof getPullRequestFiles>> | undefined;
+  let allPullRequests: Awaited<ReturnType<typeof getRepositoryPullRequests>> | undefined;
   let error;
 
   try {
-    [pullRequest, files] = await Promise.all([
+    [pullRequest, files, allPullRequests] = await Promise.all([
       getPullRequest(owner, repo, prNumber),
       getPullRequestFiles(owner, repo, prNumber),
+      getRepositoryPullRequests(owner, repo, "all"),
     ]);
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to fetch pull request";
@@ -45,13 +49,31 @@ export default async function PullRequestDetailPage({ params }: PageProps) {
 
       <div className="min-h-screen bg-background p-8">
         <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <Link
             href={`/repositories/${owner}/${repo}`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Back to {owner}/{repo}
           </Link>
+
+          {/* PR Switcher - Sprint 8 */}
+          {allPullRequests && allPullRequests.length > 1 && (
+            <PRSwitcher
+              owner={owner}
+              repo={repo}
+              currentPRNumber={prNumber}
+              pullRequests={allPullRequests.map((pr) => ({
+                number: pr.number,
+                title: pr.title,
+                state: pr.state as 'open' | 'closed',
+                user: {
+                  login: pr.user.login,
+                  avatar_url: pr.user.avatar_url,
+                },
+              }))}
+            />
+          )}
         </div>
 
         {error && (

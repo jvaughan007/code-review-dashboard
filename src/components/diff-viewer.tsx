@@ -59,6 +59,8 @@ export type LineClickInfo = {
   lineContent: string;
 };
 
+export type DiffViewMode = 'side-by-side' | 'unified';
+
 export interface DiffViewerProps {
   patch: string;
   filename: string;
@@ -71,6 +73,8 @@ export interface DiffViewerProps {
   focusedLine?: number | null;
   /** Whether this file is the focused file for keyboard navigation */
   isFocusedFile?: boolean;
+  /** View mode: side-by-side or unified (default: side-by-side) */
+  viewMode?: DiffViewMode;
 }
 
 /**
@@ -93,6 +97,7 @@ export function DiffViewer({
   lineCommentCounts,
   focusedLine,
   isFocusedFile = false,
+  viewMode = 'side-by-side',
 }: DiffViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -107,7 +112,7 @@ export function DiffViewer({
       const diffHtml = Diff2Html.html(patch, {
         drawFileList: false,
         matching: 'lines',
-        outputFormat: 'side-by-side',
+        outputFormat: viewMode === 'unified' ? 'line-by-line' : 'side-by-side',
         renderNothingWhenEmpty: false,
       });
 
@@ -204,7 +209,7 @@ export function DiffViewer({
     return () => {
       cleanupFns.forEach((fn) => fn());
     };
-  }, [patch, filename, onLineClick, lineCommentCounts]);
+  }, [patch, filename, onLineClick, lineCommentCounts, viewMode]);
 
   // Debounced scroll function - only scrolls if element is out of viewport
   const debouncedScrollRef = useRef<((element: HTMLElement) => void) | null>(null);

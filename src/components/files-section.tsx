@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { SmartDiffViewer, type LineClickInfo } from "./smart-diff-viewer";
+import { ChevronDown, ChevronRight, Columns2, List } from "lucide-react";
+import { SmartDiffViewer, type LineClickInfo, type DiffViewMode } from "./smart-diff-viewer";
 import { LineCommentThread } from "./line-comment-thread";
 import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help";
 import { FileProgressCheckbox } from "./file-progress-checkbox";
@@ -41,6 +41,8 @@ interface FilesSectionProps {
 export function FilesSection({ files, prId }: FilesSectionProps) {
   const [selectedLine, setSelectedLine] = useState<LineClickInfo | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  // Diff view mode: side-by-side or unified - Sprint 8 Story
+  const [viewMode, setViewMode] = useState<DiffViewMode>('side-by-side');
   // Track collapsed state per file - default: first 3 files expanded, rest collapsed
   const [collapsedFiles, setCollapsedFiles] = useState<Set<number>>(() => {
     const collapsed = new Set<number>();
@@ -165,6 +167,37 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
             {files.length} file{files.length !== 1 ? "s" : ""} changed
           </span>
           <div className="flex gap-2">
+            {/* View mode toggle - Sprint 8 */}
+            <div className="flex rounded-md border overflow-hidden">
+              <button
+                onClick={() => setViewMode('side-by-side')}
+                className={`min-h-[44px] px-3 py-2 text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                  viewMode === 'side-by-side'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }`}
+                aria-pressed={viewMode === 'side-by-side'}
+                aria-label="Side-by-side view"
+                title="Side-by-side view"
+              >
+                <Columns2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Split</span>
+              </button>
+              <button
+                onClick={() => setViewMode('unified')}
+                className={`min-h-[44px] px-3 py-2 text-xs font-medium flex items-center gap-1.5 transition-colors border-l ${
+                  viewMode === 'unified'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }`}
+                aria-pressed={viewMode === 'unified'}
+                aria-label="Unified view"
+                title="Unified view"
+              >
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Unified</span>
+              </button>
+            </div>
             <button
               onClick={expandAll}
               className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-medium rounded-md border hover:bg-muted transition-colors"
@@ -256,6 +289,7 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
                     lineCommentCounts={getFileCommentSummary(prId, file.filename)}
                     focusedLine={currentFileIndex === index ? currentLineNumber : null}
                     isFocusedFile={currentFileIndex === index}
+                    viewMode={viewMode}
                   />
                 </div>
               )}

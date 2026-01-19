@@ -33,4 +33,4 @@ export function SmartDiffViewer(props: DiffViewerProps) {
 }
 
 // Re-export types for convenience
-export type { DiffViewerProps, LineClickInfo } from "./diff-viewer";
+export type { DiffViewerProps, LineClickInfo, DiffViewMode } from "./diff-viewer";

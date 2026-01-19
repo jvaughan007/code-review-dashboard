@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback, memo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { parseDiffPatch, type DiffLine } from "@/lib/utils/diff-parser";
-import type { LineClickInfo } from "./diff-viewer";
+import type { LineClickInfo, DiffViewMode } from "./diff-viewer";
 
 interface VirtualizedDiffViewerProps {
   patch: string;
@@ -13,6 +13,8 @@ interface VirtualizedDiffViewerProps {
   lineCommentCounts?: Map<number, number>;
   focusedLine?: number | null;
   isFocusedFile?: boolean;
+  /** View mode - virtualized viewer always uses unified style */
+  viewMode?: DiffViewMode;
 }
 
 // Line height in pixels (must match CSS)
