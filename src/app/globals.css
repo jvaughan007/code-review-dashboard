@@ -124,3 +124,180 @@ a:focus-visible,
   min-height: 44px;
   min-width: 44px;
 }
+
+/* ===========================================
+   DIFF VIEWER STYLES (diff2html overrides)
+   =========================================== */
+
+/* Custom diff viewer styles */
+.diff-viewer-wrapper {
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  overflow: hidden;
+}
+
+.diff-content {
+  width: 100%;
+}
+
+/* Override diff2html styles for dark mode support */
+.d2h-wrapper {
+  background-color: transparent;
+}
+
+.d2h-file-header {
+  display: none; /* We show our own header */
+}
+
+.d2h-code-side-linenumber {
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted) / 0.3);
+  position: relative;
+}
+
+/* Clickable line numbers for comments */
+.line-number-clickable {
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+}
+
+.line-number-clickable:hover {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.dark .line-number-clickable:hover {
+  background-color: rgba(30, 58, 138, 0.4);
+  color: #60a5fa;
+}
+
+.line-number-clickable:hover::before {
+  content: '+';
+  position: absolute;
+  left: 0.25rem;
+  color: #3b82f6;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+/* Comment count badge */
+.line-comment-badge {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.line-comment-badge:hover {
+  background-color: #2563eb;
+}
+
+/* Focused file indicator */
+.file-focused {
+  box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px white;
+}
+
+/* Focused line highlight */
+.line-focused {
+  background-color: #fef9c3;
+}
+
+.dark .line-focused {
+  background-color: rgba(113, 63, 18, 0.3);
+}
+
+.line-focused .d2h-code-side-linenumber {
+  background-color: #fef08a;
+  color: #854d0e;
+}
+
+.dark .line-focused .d2h-code-side-linenumber {
+  background-color: rgba(133, 77, 14, 0.4);
+  color: #fef08a;
+}
+
+.d2h-code-side-line {
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.d2h-ins {
+  background-color: #f0fdf4;
+}
+
+.dark .d2h-ins {
+  background-color: rgba(20, 83, 45, 0.2);
+}
+
+.d2h-del {
+  background-color: #fef2f2;
+}
+
+.dark .d2h-del {
+  background-color: rgba(127, 29, 29, 0.2);
+}
+
+.d2h-info {
+  background-color: #eff6ff;
+  color: #1e3a8a;
+}
+
+.dark .d2h-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  color: #dbeafe;
+}
+
+/* Ensure diff table is responsive */
+.d2h-diff-table {
+  width: 100%;
+}
+
+/* Syntax highlighting overrides */
+.token.comment {
+  color: #6b7280;
+}
+
+.token.keyword {
+  color: #9333ea;
+}
+
+.dark .token.keyword {
+  color: #c084fc;
+}
+
+.token.string {
+  color: #16a34a;
+}
+
+.dark .token.string {
+  color: #4ade80;
+}
+
+.token.function {
+  color: #2563eb;
+}
+
+.dark .token.function {
+  color: #60a5fa;
+}
+
+.token.number {
+  color: #ea580c;
+}
+
+.dark .token.number {
+  color: #fb923c;
+}
