@@ -13,6 +13,7 @@ import { useCommentsStore } from "@/lib/stores/comments-store";
 import { useFocusStateStore } from "@/lib/stores/focus-state-store";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useReviewProgress } from "@/lib/hooks/use-review-progress";
+import { getNavigableLineNumbers, getLineInfo } from "@/lib/utils/diff-parser";
 
 interface FileChange {
   filename: string;
@@ -98,6 +99,7 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
     currentFileIndex,
     currentLineNumber,
     setTotalFiles,
+    setFileLineNumbers,
     nextFile,
     prevFile,
     nextLine,
@@ -109,6 +111,16 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
   useEffect(() => {
     setTotalFiles(files.length);
   }, [files.length, setTotalFiles]);
+
+  // Initialize navigable line numbers for each file
+  useEffect(() => {
+    files.forEach((file, index) => {
+      if (file.patch) {
+        const lineNumbers = getNavigableLineNumbers(file.patch);
+        setFileLineNumbers(index, lineNumbers);
+      }
+    });
+  }, [files, setFileLineNumbers]);
 
   // Handle line click - open comment thread modal
   const handleLineClick = (lineInfo: LineClickInfo) => {
@@ -124,11 +136,27 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
   const handleOpenComment = () => {
     if (currentLineNumber && files[currentFileIndex]) {
       const currentFile = files[currentFileIndex];
+
+      // Get actual line info from the diff patch
+      let lineType: "context" | "addition" | "deletion" = "context";
+      let lineContent = "";
+
+      if (currentFile.patch) {
+        const info = getLineInfo(currentFile.patch, currentLineNumber);
+        if (info) {
+          // Map diff line type to comment line type
+          if (info.type === "addition") lineType = "addition";
+          else if (info.type === "deletion") lineType = "deletion";
+          else lineType = "context";
+          lineContent = info.content;
+        }
+      }
+
       setSelectedLine({
         filePath: currentFile.filename,
         lineNumber: currentLineNumber,
-        lineType: "context", // Default to context since we don't know from focus
-        lineContent: "", // Will be populated from the modal
+        lineType,
+        lineContent,
       });
     }
   };

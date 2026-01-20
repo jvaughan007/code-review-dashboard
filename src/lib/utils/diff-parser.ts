@@ -122,3 +122,41 @@ export function countDiffLines(patch: string): number {
 export function shouldVirtualize(patch: string, threshold: number = 500): boolean {
   return countDiffLines(patch) >= threshold;
 }
+
+/**
+ * Extract navigable line numbers from a diff patch
+ * Returns an array of line numbers that can be navigated to (additions and context lines with newLineNumber)
+ * Sorted in ascending order for navigation
+ */
+export function getNavigableLineNumbers(patch: string): number[] {
+  const parsed = parseDiffPatch(patch);
+  const lineNumbers = new Set<number>();
+
+  for (const line of parsed.lines) {
+    // Include lines that have a newLineNumber (additions and context lines)
+    // These are the lines visible in the "new" side of the diff
+    if (line.newLineNumber !== null) {
+      lineNumbers.add(line.newLineNumber);
+    }
+  }
+
+  return Array.from(lineNumbers).sort((a, b) => a - b);
+}
+
+/**
+ * Get line content and type for a specific line number
+ */
+export function getLineInfo(patch: string, lineNumber: number): { content: string; type: DiffLine["type"] } | null {
+  const parsed = parseDiffPatch(patch);
+
+  for (const line of parsed.lines) {
+    if (line.newLineNumber === lineNumber || line.oldLineNumber === lineNumber) {
+      return {
+        content: line.content,
+        type: line.type,
+      };
+    }
+  }
+
+  return null;
+}
