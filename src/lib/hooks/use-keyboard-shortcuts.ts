@@ -199,11 +199,11 @@ export function useKeyboardShortcuts({
   const shortcuts: KeyboardShortcut[] = [
     { key: "j", description: "Next file" },
     { key: "k", description: "Previous file" },
-    { key: "c", description: "Comment on line" },
+    { key: "\u2191", description: "Previous line (within file)" }, // ↑
+    { key: "\u2193", description: "Next line (within file)" }, // ↓
+    { key: "c", description: "Comment on focused line (use arrows first)" },
     { key: "r", description: "Reply to comment" },
     { key: "?", description: "Show keyboard shortcuts", modifiers: { shift: true } },
-    { key: "\u2191", description: "Previous line" }, // ↑
-    { key: "\u2193", description: "Next line" }, // ↓
     { key: "Enter", description: "Submit" },
     { key: "Esc", description: "Cancel / Close" },
   ];

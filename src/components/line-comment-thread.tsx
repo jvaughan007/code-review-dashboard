@@ -224,7 +224,7 @@ export function LineCommentThread({
   if (isLoadingUser) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-card rounded-lg border shadow-xl p-6">
+        <div className="bg-card text-card-foreground rounded-lg border border-border shadow-xl p-6">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
         </div>
       </div>
@@ -234,9 +234,9 @@ export function LineCommentThread({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
       {/* Modal - Full width on mobile, centered on desktop */}
-      <div className="bg-card rounded-t-xl sm:rounded-lg border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+      <div className="bg-card text-card-foreground rounded-t-xl sm:rounded-lg border border-border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col">
         {/* Header - Touch friendly close button */}
-        <div className="flex items-center justify-between p-3 sm:p-4 border-b">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
             <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             <h2 className="text-base sm:text-lg font-semibold truncate">
@@ -258,7 +258,7 @@ export function LineCommentThread({
         </div>
 
         {/* Line context - Responsive */}
-        <div className="px-3 sm:px-4 py-2 sm:py-3 border-b">
+        <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
           <div className="flex flex-wrap items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${lineTypeInfo.bgColor} ${lineTypeInfo.textColor}`}>
               <LineTypeIcon className="h-3 w-3" />
@@ -324,7 +324,7 @@ export function LineCommentThread({
         </div>
 
         {/* Footer - Safe area padding for mobile */}
-        <div className="px-3 sm:px-4 py-3 sm:py-2 border-t text-xs text-center text-muted-foreground pb-safe">
+        <div className="px-3 sm:px-4 py-3 sm:py-2 border-t border-border text-xs text-center text-muted-foreground pb-safe">
           Comments sync automatically
         </div>
       </div>

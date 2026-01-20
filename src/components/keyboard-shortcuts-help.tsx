@@ -32,27 +32,21 @@ export function KeyboardShortcutsHelp({
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
-      <div
-        className="rounded-lg border shadow-xl max-w-md w-full mx-4"
-        style={{ backgroundColor: '#fff', borderColor: '#e5e7eb' }}
-      >
+      <div className="bg-card text-card-foreground rounded-lg border border-border shadow-xl max-w-md w-full mx-4">
         {/* Header */}
-        <div
-          className="flex items-center justify-between p-4 border-b"
-          style={{ borderColor: '#e5e7eb' }}
-        >
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Keyboard className="h-5 w-5" style={{ color: '#6b7280' }} />
-            <h2 className="text-lg font-semibold" style={{ color: '#000' }}>
+            <Keyboard className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold text-foreground">
               Keyboard Shortcuts
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md transition-colors hover:bg-gray-100"
+            className="p-2 rounded-md transition-colors hover:bg-muted text-muted-foreground hover:text-foreground"
             aria-label="Close"
           >
-            <X className="h-5 w-5" style={{ color: '#374151' }} />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -62,58 +56,29 @@ export function KeyboardShortcutsHelp({
             {shortcuts.map((shortcut, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between py-2 border-b last:border-0"
-                style={{ borderColor: '#e5e7eb' }}
+                className="flex items-center justify-between py-2 border-b border-border last:border-0"
               >
-                <span className="text-sm" style={{ color: '#374151' }}>
+                <span className="text-sm text-foreground">
                   {shortcut.description}
                 </span>
                 <div className="flex items-center gap-1">
                   {shortcut.modifiers?.shift && (
-                    <kbd
-                      className="px-2 py-1 text-xs font-mono rounded border"
-                      style={{
-                        backgroundColor: '#e5e7eb',
-                        borderColor: '#d1d5db',
-                        color: '#1f2937',
-                      }}
-                    >
+                    <kbd className="px-2 py-1 text-xs font-mono rounded border border-border bg-muted text-foreground">
                       Shift
                     </kbd>
                   )}
                   {shortcut.modifiers?.ctrl && (
-                    <kbd
-                      className="px-2 py-1 text-xs font-mono rounded border"
-                      style={{
-                        backgroundColor: '#e5e7eb',
-                        borderColor: '#d1d5db',
-                        color: '#1f2937',
-                      }}
-                    >
+                    <kbd className="px-2 py-1 text-xs font-mono rounded border border-border bg-muted text-foreground">
                       Ctrl
                     </kbd>
                   )}
                   {shortcut.modifiers?.meta && (
-                    <kbd
-                      className="px-2 py-1 text-xs font-mono rounded border"
-                      style={{
-                        backgroundColor: '#e5e7eb',
-                        borderColor: '#d1d5db',
-                        color: '#1f2937',
-                      }}
-                    >
+                    <kbd className="px-2 py-1 text-xs font-mono rounded border border-border bg-muted text-foreground">
                       Cmd
                     </kbd>
                   )}
                   {shortcut.modifiers?.alt && (
-                    <kbd
-                      className="px-2 py-1 text-xs font-mono rounded border"
-                      style={{
-                        backgroundColor: '#e5e7eb',
-                        borderColor: '#d1d5db',
-                        color: '#1f2937',
-                      }}
-                    >
+                    <kbd className="px-2 py-1 text-xs font-mono rounded border border-border bg-muted text-foreground">
                       Alt
                     </kbd>
                   )}
@@ -121,16 +86,9 @@ export function KeyboardShortcutsHelp({
                     shortcut.modifiers?.ctrl ||
                     shortcut.modifiers?.meta ||
                     shortcut.modifiers?.alt) && (
-                    <span style={{ color: '#6b7280' }} className="mx-1">+</span>
+                    <span className="text-muted-foreground mx-1">+</span>
                   )}
-                  <kbd
-                    className="px-2 py-1 text-xs font-mono rounded border min-w-[2rem] text-center"
-                    style={{
-                      backgroundColor: '#e5e7eb',
-                      borderColor: '#d1d5db',
-                      color: '#1f2937',
-                    }}
-                  >
+                  <kbd className="px-2 py-1 text-xs font-mono rounded border border-border bg-muted text-foreground min-w-[2rem] text-center">
                     {shortcut.key}
                   </kbd>
                 </div>
@@ -140,20 +98,10 @@ export function KeyboardShortcutsHelp({
         </div>
 
         {/* Footer */}
-        <div
-          className="px-4 py-3 border-t rounded-b-lg"
-          style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}
-        >
-          <p className="text-xs text-center" style={{ color: '#6b7280' }}>
+        <div className="px-4 py-3 border-t border-border bg-muted rounded-b-lg">
+          <p className="text-xs text-center text-muted-foreground">
             Press{" "}
-            <kbd
-              className="px-1.5 py-0.5 text-xs font-mono rounded border"
-              style={{
-                backgroundColor: '#e5e7eb',
-                borderColor: '#d1d5db',
-                color: '#1f2937',
-              }}
-            >
+            <kbd className="px-1.5 py-0.5 text-xs font-mono rounded border border-border bg-secondary text-foreground">
               ?
             </kbd>{" "}
             anytime to show this help

@@ -114,8 +114,8 @@ export function NotificationSettings({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell style={{ color: '#000' }} size={20} />
-          <h3 className="text-lg font-semibold" style={{ color: '#000' }}>
+          <Bell className="text-foreground" size={20} />
+          <h3 className="text-lg font-semibold text-foreground">
             Notification Preferences
           </h3>
         </div>
@@ -123,11 +123,10 @@ export function NotificationSettings({
           onClick={resetToDefaults}
           className="
             flex items-center gap-1.5 px-3 py-1.5
-            text-sm
-            hover:bg-gray-100 dark:hover:bg-gray-800
+            text-sm text-foreground
+            hover:bg-muted
             rounded-lg transition-colors
           "
-          style={{ color: '#000' }}
           title="Reset to defaults"
         >
           <RotateCcw size={14} />
@@ -137,7 +136,7 @@ export function NotificationSettings({
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="flex items-center gap-2 text-sm" style={{ color: '#000' }}>
+        <div className="flex items-center gap-2 text-sm text-foreground">
           <Loader2 size={14} className="animate-spin" />
           Loading settings...
         </div>
@@ -145,7 +144,7 @@ export function NotificationSettings({
 
       {/* Notification types */}
       <div className="space-y-1">
-        <h4 className="text-sm font-medium mb-3" style={{ color: '#000' }}>
+        <h4 className="text-sm font-medium mb-3 text-foreground">
           Notification Types
         </h4>
         {settingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -162,8 +161,8 @@ export function NotificationSettings({
       </div>
 
       {/* System settings */}
-      <div className="space-y-1 pt-4 border-t border-gray-300">
-        <h4 className="text-sm font-medium mb-3" style={{ color: '#000' }}>
+      <div className="space-y-1 pt-4 border-t border-border">
+        <h4 className="text-sm font-medium mb-3 text-foreground">
           System Settings
         </h4>
         {systemSettingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -201,25 +200,17 @@ function ToggleRow({
   onToggle,
 }: ToggleRowProps) {
   return (
-    <div
-      className="
-        flex items-center justify-between
-        p-3 rounded-lg
-        hover:bg-gray-100
-        transition-colors
-      "
-    >
+    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
       <div className="flex items-start gap-3">
         <Icon
           size={18}
-          className="mt-0.5"
-          style={{ color: enabled ? '#3b82f6' : '#6b7280' }}
+          className={`mt-0.5 ${enabled ? 'text-primary' : 'text-muted-foreground'}`}
         />
         <div>
-          <p className="text-sm font-medium" style={{ color: '#000' }}>
+          <p className="text-sm font-medium text-foreground">
             {label}
           </p>
-          <p className="text-xs" style={{ color: '#374151' }}>
+          <p className="text-xs text-muted-foreground">
             {description}
           </p>
         </div>
@@ -230,11 +221,11 @@ function ToggleRow({
         className={`
           relative w-11 h-6 rounded-full
           transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
           ${
             enabled
-              ? "bg-blue-500"
-              : "bg-gray-300"
+              ? "bg-primary"
+              : "bg-muted"
           }
           ${isSaving ? "opacity-50 cursor-wait" : "cursor-pointer"}
         `}
@@ -246,16 +237,16 @@ function ToggleRow({
           className={`
             absolute top-0.5 left-0.5
             w-5 h-5 rounded-full
-            bg-white shadow
+            bg-white dark:bg-gray-100 shadow
             transition-transform duration-200
             flex items-center justify-center
             ${enabled ? "translate-x-5" : "translate-x-0"}
           `}
         >
           {isSaving ? (
-            <Loader2 size={12} className="animate-spin text-gray-400" />
+            <Loader2 size={12} className="animate-spin text-muted-foreground" />
           ) : enabled ? (
-            <Check size={12} className="text-blue-500" />
+            <Check size={12} className="text-primary" />
           ) : null}
         </span>
       </button>

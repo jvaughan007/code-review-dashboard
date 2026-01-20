@@ -92,21 +92,21 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
             absolute right-0 top-full mt-2
             w-[360px] sm:w-[420px]
             max-h-[calc(100vh-100px)]
+            bg-background
             rounded-xl shadow-lg
             border border-border
             overflow-hidden
             z-50
           "
-          style={{ backgroundColor: 'hsl(var(--background))' }}
           role="dialog"
           aria-label="Settings panel"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-            <h2 className="text-base font-semibold" style={{ color: '#000' }}>Settings</h2>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
+            <h2 className="text-base font-semibold text-foreground">Settings</h2>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               aria-label="Close settings"
             >
               <X size={18} />
