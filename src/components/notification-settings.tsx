@@ -114,8 +114,8 @@ export function NotificationSettings({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="text-gray-700" size={20} />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <Bell style={{ color: '#000' }} size={20} />
+          <h3 className="text-lg font-semibold" style={{ color: '#000' }}>
             Notification Preferences
           </h3>
         </div>
@@ -123,11 +123,11 @@ export function NotificationSettings({
           onClick={resetToDefaults}
           className="
             flex items-center gap-1.5 px-3 py-1.5
-            text-sm text-gray-800
-            hover:text-gray-900 dark:hover:text-gray-100
+            text-sm
             hover:bg-gray-100 dark:hover:bg-gray-800
             rounded-lg transition-colors
           "
+          style={{ color: '#000' }}
           title="Reset to defaults"
         >
           <RotateCcw size={14} />
@@ -137,7 +137,7 @@ export function NotificationSettings({
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-gray-700">
+        <div className="flex items-center gap-2 text-sm" style={{ color: '#000' }}>
           <Loader2 size={14} className="animate-spin" />
           Loading settings...
         </div>
@@ -145,7 +145,7 @@ export function NotificationSettings({
 
       {/* Notification types */}
       <div className="space-y-1">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <h4 className="text-sm font-medium mb-3" style={{ color: '#000' }}>
           Notification Types
         </h4>
         {settingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -162,8 +162,8 @@ export function NotificationSettings({
       </div>
 
       {/* System settings */}
-      <div className="space-y-1 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+      <div className="space-y-1 pt-4 border-t border-gray-300">
+        <h4 className="text-sm font-medium mb-3" style={{ color: '#000' }}>
           System Settings
         </h4>
         {systemSettingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -205,24 +205,21 @@ function ToggleRow({
       className="
         flex items-center justify-between
         p-3 rounded-lg
-        hover:bg-gray-50 dark:hover:bg-gray-800/50
+        hover:bg-gray-100
         transition-colors
       "
     >
       <div className="flex items-start gap-3">
         <Icon
           size={18}
-          className={`mt-0.5 ${
-            enabled
-              ? "text-blue-500 dark:text-blue-400"
-              : "text-gray-400 dark:text-gray-500"
-          }`}
+          className="mt-0.5"
+          style={{ color: enabled ? '#3b82f6' : '#6b7280' }}
         />
         <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <p className="text-sm font-medium" style={{ color: '#000' }}>
             {label}
           </p>
-          <p className="text-xs text-gray-700">
+          <p className="text-xs" style={{ color: '#374151' }}>
             {description}
           </p>
         </div>
@@ -234,11 +231,10 @@ function ToggleRow({
           relative w-11 h-6 rounded-full
           transition-colors duration-200
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          dark:focus:ring-offset-gray-900
           ${
             enabled
-              ? "bg-blue-500 dark:bg-blue-600"
-              : "bg-gray-200 dark:bg-gray-700"
+              ? "bg-blue-500"
+              : "bg-gray-300"
           }
           ${isSaving ? "opacity-50 cursor-wait" : "cursor-pointer"}
         `}
