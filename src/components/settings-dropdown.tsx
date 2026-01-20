@@ -67,17 +67,25 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
       {/* Settings button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          p-2 rounded-lg
-          transition-colors duration-200
-          ${
-            isOpen
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        className="p-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+        style={{
+          backgroundColor: isOpen ? 'hsl(var(--muted))' : 'transparent',
+          color: isOpen
+            ? 'hsl(var(--foreground))'
+            : 'hsl(var(--muted-foreground))',
+        }}
+        onMouseEnter={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.backgroundColor = 'hsl(var(--muted))';
+            e.currentTarget.style.color = 'hsl(var(--foreground))';
           }
-          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-          dark:focus:ring-offset-background
-        `}
+        }}
+        onMouseLeave={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+          }
+        }}
         aria-label="Settings"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -88,25 +96,40 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
       {/* Dropdown panel */}
       {isOpen && (
         <div
-          className="
-            absolute right-0 top-full mt-2
-            w-[360px] sm:w-[420px]
-            max-h-[calc(100vh-100px)]
-            bg-background
-            rounded-xl shadow-lg
-            border border-border
-            overflow-hidden
-            z-50
-          "
+          className="absolute right-0 top-full mt-2 w-[360px] sm:w-[420px] max-h-[calc(100vh-100px)] rounded-xl shadow-lg border overflow-hidden z-50"
+          style={{
+            backgroundColor: 'hsl(var(--background))',
+            borderColor: 'hsl(var(--border))',
+          }}
           role="dialog"
           aria-label="Settings panel"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
-            <h2 className="text-base font-semibold text-foreground">Settings</h2>
+          <div
+            className="flex items-center justify-between px-4 py-3 border-b"
+            style={{
+              borderColor: 'hsl(var(--border))',
+              backgroundColor: 'hsl(var(--muted))',
+            }}
+          >
+            <h2
+              className="text-base font-semibold"
+              style={{ color: 'hsl(var(--foreground))' }}
+            >
+              Settings
+            </h2>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="p-1 rounded-lg transition-colors"
+              style={{ color: 'hsl(var(--muted-foreground))' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'hsl(var(--muted))';
+                e.currentTarget.style.color = 'hsl(var(--foreground))';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+              }}
               aria-label="Close settings"
             >
               <X size={18} />
@@ -114,7 +137,7 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b">
+          <div className="flex border-b" style={{ borderColor: 'hsl(var(--border))' }}>
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -124,12 +147,26 @@ export function SettingsDropdown({ className = "" }: SettingsDropdownProps) {
                   px-4 py-2.5
                   text-sm font-medium
                   transition-colors
-                  ${
-                    activeTab === id
-                      ? "text-primary border-b-2 border-primary -mb-px"
-                      : "text-muted-foreground hover:text-foreground"
-                  }
+                  ${activeTab === id ? 'border-b-2 -mb-px' : ''}
                 `}
+                style={{
+                  color:
+                    activeTab === id
+                      ? 'hsl(var(--primary))'
+                      : 'hsl(var(--muted-foreground))',
+                  borderColor:
+                    activeTab === id ? 'hsl(var(--primary))' : 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== id) {
+                    e.currentTarget.style.color = 'hsl(var(--foreground))';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== id) {
+                    e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+                  }
+                }}
                 role="tab"
                 aria-selected={activeTab === id}
                 aria-controls={`${id}-panel`}

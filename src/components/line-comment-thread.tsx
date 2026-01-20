@@ -224,8 +224,18 @@ export function LineCommentThread({
   if (isLoadingUser) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-card text-card-foreground rounded-lg border border-border shadow-xl p-6">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+        <div
+          className="rounded-lg border shadow-xl p-6"
+          style={{
+            backgroundColor: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+            borderColor: 'hsl(var(--border))',
+          }}
+        >
+          <Loader2
+            className="h-6 w-6 animate-spin mx-auto"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
+          />
         </div>
       </div>
     );
@@ -234,23 +244,45 @@ export function LineCommentThread({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
       {/* Modal - Full width on mobile, centered on desktop */}
-      <div className="bg-card text-card-foreground rounded-t-xl sm:rounded-lg border border-border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+      <div
+        className="rounded-t-xl sm:rounded-lg border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] sm:max-h-[80vh] flex flex-col"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          color: 'hsl(var(--card-foreground))',
+          borderColor: 'hsl(var(--border))',
+        }}
+      >
         {/* Header - Touch friendly close button */}
-        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
+        <div
+          className="flex items-center justify-between p-3 sm:p-4 border-b"
+          style={{ borderColor: 'hsl(var(--border))' }}
+        >
           <div className="flex items-center gap-2 min-w-0">
-            <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            <MessageSquare
+              className="h-5 w-5 flex-shrink-0"
+              style={{ color: 'hsl(var(--muted-foreground))' }}
+            />
             <h2 className="text-base sm:text-lg font-semibold truncate">
               Line {lineInfo.lineNumber}
             </h2>
             {lineComments.length > 0 && (
-              <span className="text-sm text-muted-foreground flex-shrink-0">
+              <span
+                className="text-sm flex-shrink-0"
+                style={{ color: 'hsl(var(--muted-foreground))' }}
+              >
                 ({lineComments.length})
               </span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md hover:bg-muted transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md transition-colors"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'hsl(var(--muted))';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -258,18 +290,29 @@ export function LineCommentThread({
         </div>
 
         {/* Line context - Responsive */}
-        <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
+        <div
+          className="px-3 sm:px-4 py-2 sm:py-3 border-b"
+          style={{ borderColor: 'hsl(var(--border))' }}
+        >
           <div className="flex flex-wrap items-center gap-2">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${lineTypeInfo.bgColor} ${lineTypeInfo.textColor}`}>
+            <div
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${lineTypeInfo.bgColor} ${lineTypeInfo.textColor}`}
+            >
               <LineTypeIcon className="h-3 w-3" />
               <span>{lineTypeInfo.label}</span>
             </div>
-            <p className="text-xs text-muted-foreground font-mono truncate max-w-full">
+            <p
+              className="text-xs font-mono truncate max-w-full"
+              style={{ color: 'hsl(var(--muted-foreground))' }}
+            >
               {lineInfo.filePath}
             </p>
           </div>
           {lineInfo.lineContent && (
-            <pre className="mt-2 text-xs sm:text-sm font-mono bg-muted/50 p-2 rounded overflow-x-auto max-w-full">
+            <pre
+              className="mt-2 text-xs sm:text-sm font-mono p-2 rounded overflow-x-auto max-w-full"
+              style={{ backgroundColor: 'hsl(var(--muted) / 0.5)' }}
+            >
               <code>{lineInfo.lineContent}</code>
             </pre>
           )}
@@ -279,15 +322,27 @@ export function LineCommentThread({
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
           {/* Comment input */}
           {currentUserId ? (
-            <div className="rounded-lg border bg-muted/30 p-4">
+            <div
+              className="rounded-lg border p-4"
+              style={{
+                borderColor: 'hsl(var(--border))',
+                backgroundColor: 'hsl(var(--muted) / 0.3)',
+              }}
+            >
               <CommentInput
                 onSubmit={handleSubmit}
                 placeholder={`Comment on line ${lineInfo.lineNumber}...`}
               />
             </div>
           ) : (
-            <div className="rounded-lg border bg-muted/50 p-4 text-center">
-              <p className="text-sm text-muted-foreground">
+            <div
+              className="rounded-lg border p-4 text-center"
+              style={{
+                borderColor: 'hsl(var(--border))',
+                backgroundColor: 'hsl(var(--muted) / 0.5)',
+              }}
+            >
+              <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Sign in to add comments
               </p>
             </div>
@@ -312,11 +367,14 @@ export function LineCommentThread({
             </div>
           ) : (
             <div className="text-center py-8">
-              <MessageSquare className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
+              <MessageSquare
+                className="h-10 w-10 mx-auto mb-2"
+                style={{ color: 'hsl(var(--muted-foreground) / 0.5)' }}
+              />
+              <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 No comments on this line yet
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Be the first to comment
               </p>
             </div>
@@ -324,7 +382,13 @@ export function LineCommentThread({
         </div>
 
         {/* Footer - Safe area padding for mobile */}
-        <div className="px-3 sm:px-4 py-3 sm:py-2 border-t border-border text-xs text-center text-muted-foreground pb-safe">
+        <div
+          className="px-3 sm:px-4 py-3 sm:py-2 border-t text-xs text-center pb-safe"
+          style={{
+            borderColor: 'hsl(var(--border))',
+            color: 'hsl(var(--muted-foreground))',
+          }}
+        >
           Comments sync automatically
         </div>
       </div>

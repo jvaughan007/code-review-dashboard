@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Bell,
   MessageSquare,
@@ -114,19 +114,24 @@ export function NotificationSettings({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="text-foreground" size={20} />
-          <h3 className="text-lg font-semibold text-foreground">
+          <Bell size={20} style={{ color: 'hsl(var(--foreground))' }} />
+          <h3
+            className="text-lg font-semibold"
+            style={{ color: 'hsl(var(--foreground))' }}
+          >
             Notification Preferences
           </h3>
         </div>
         <button
           onClick={resetToDefaults}
-          className="
-            flex items-center gap-1.5 px-3 py-1.5
-            text-sm text-foreground
-            hover:bg-muted
-            rounded-lg transition-colors
-          "
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors"
+          style={{ color: 'hsl(var(--foreground))' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'hsl(var(--muted))';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
           title="Reset to defaults"
         >
           <RotateCcw size={14} />
@@ -136,7 +141,10 @@ export function NotificationSettings({
 
       {/* Loading overlay */}
       {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-foreground">
+        <div
+          className="flex items-center gap-2 text-sm"
+          style={{ color: 'hsl(var(--foreground))' }}
+        >
           <Loader2 size={14} className="animate-spin" />
           Loading settings...
         </div>
@@ -144,7 +152,10 @@ export function NotificationSettings({
 
       {/* Notification types */}
       <div className="space-y-1">
-        <h4 className="text-sm font-medium mb-3 text-foreground">
+        <h4
+          className="text-sm font-medium mb-3"
+          style={{ color: 'hsl(var(--foreground))' }}
+        >
           Notification Types
         </h4>
         {settingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -161,8 +172,14 @@ export function NotificationSettings({
       </div>
 
       {/* System settings */}
-      <div className="space-y-1 pt-4 border-t border-border">
-        <h4 className="text-sm font-medium mb-3 text-foreground">
+      <div
+        className="space-y-1 pt-4 border-t"
+        style={{ borderColor: 'hsl(var(--border))' }}
+      >
+        <h4
+          className="text-sm font-medium mb-3"
+          style={{ color: 'hsl(var(--foreground))' }}
+        >
           System Settings
         </h4>
         {systemSettingsConfig.map(({ key, icon: Icon, label, description }) => (
@@ -199,18 +216,38 @@ function ToggleRow({
   isSaving,
   onToggle,
 }: ToggleRowProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
+    <div
+      className="flex items-center justify-between p-3 rounded-lg transition-colors"
+      style={{
+        backgroundColor: isHovered ? 'hsl(var(--muted))' : 'transparent',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="flex items-start gap-3">
         <Icon
           size={18}
-          className={`mt-0.5 ${enabled ? 'text-primary' : 'text-muted-foreground'}`}
+          className="mt-0.5"
+          style={{
+            color: enabled
+              ? 'hsl(var(--primary))'
+              : 'hsl(var(--muted-foreground))',
+          }}
         />
         <div>
-          <p className="text-sm font-medium text-foreground">
+          <p
+            className="text-sm font-medium"
+            style={{ color: 'hsl(var(--foreground))' }}
+          >
             {label}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p
+            className="text-xs"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
+          >
             {description}
           </p>
         </div>
@@ -221,14 +258,14 @@ function ToggleRow({
         className={`
           relative w-11 h-6 rounded-full
           transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-          ${
-            enabled
-              ? "bg-primary"
-              : "bg-muted"
-          }
+          focus:outline-none focus:ring-2 focus:ring-offset-2
           ${isSaving ? "opacity-50 cursor-wait" : "cursor-pointer"}
         `}
+        style={{
+          backgroundColor: enabled
+            ? 'hsl(var(--primary))'
+            : 'hsl(var(--muted))',
+        }}
         role="switch"
         aria-checked={enabled}
         aria-label={`${label}: ${enabled ? "enabled" : "disabled"}`}
@@ -244,9 +281,13 @@ function ToggleRow({
           `}
         >
           {isSaving ? (
-            <Loader2 size={12} className="animate-spin text-muted-foreground" />
+            <Loader2
+              size={12}
+              className="animate-spin"
+              style={{ color: 'hsl(var(--muted-foreground))' }}
+            />
           ) : enabled ? (
-            <Check size={12} className="text-primary" />
+            <Check size={12} style={{ color: 'hsl(var(--primary))' }} />
           ) : null}
         </span>
       </button>
