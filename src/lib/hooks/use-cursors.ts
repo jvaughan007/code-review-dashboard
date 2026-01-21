@@ -74,22 +74,17 @@ export function useCursors({
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        console.log('[CURSORS] Cleaning up old cursors for user:', user.id, 'session:', sessionId);
-
         // Delete any old cursors from this user's previous sessions
         // (Keep only the current session's cursor)
-        const { data: deleted, error } = await supabase
+        const { error } = await supabase
           .from('cursors')
           .delete()
           .eq('user_id', user.id)
           .eq('file_path', filePath)
-          .neq('session_id', sessionId)
-          .select();
+          .neq('session_id', sessionId);
 
         if (error) {
           console.error('[CURSORS] Error cleaning up old cursors:', error);
-        } else {
-          console.log('[CURSORS] Deleted', deleted?.length || 0, 'old cursor(s)');
         }
       } catch (error) {
         console.error('Error cleaning up old cursors:', error);
@@ -112,11 +107,8 @@ export function useCursors({
         // Get current user to filter out ALL their cursors (not just current session)
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          console.log('[CURSORS] No user found for cursor polling');
           return;
         }
-
-        console.log('[CURSORS] Polling cursors - excluding user_id:', user.id);
 
         // Fetch cursor positions (excluding ALL of current user's cursors)
         const { data: cursorsData, error: cursorsError } = await supabase
@@ -131,8 +123,6 @@ export function useCursors({
           console.error('[CURSORS] Error polling cursors:', cursorsError);
           return;
         }
-
-        console.log('[CURSORS] Fetched', cursorsData?.length || 0, 'cursor(s):', cursorsData);
 
         if (!cursorsData || cursorsData.length === 0) {
           setCursors(prId, filePath, []);

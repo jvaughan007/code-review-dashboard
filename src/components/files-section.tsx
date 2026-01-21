@@ -151,15 +151,6 @@ export function FilesSection({ files, prId }: FilesSectionProps) {
           lineContent = info.content;
         }
 
-        // Debug: log what we found
-        console.log("[FilesSection] Opening comment via 'c' shortcut:", {
-          currentLineNumber,
-          currentFileIndex,
-          filename: currentFile.filename,
-          infoFound: !!info,
-          lineType,
-          lineContentLength: lineContent.length,
-        });
       }
 
       setSelectedLine({

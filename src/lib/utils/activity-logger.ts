@@ -35,8 +35,6 @@ export async function logActivity({
 
     if (error) {
       console.error('[ACTIVITY_LOGGER] Error logging activity:', error);
-    } else {
-      console.log('[ACTIVITY_LOGGER] Logged activity:', activityType);
     }
   } catch (error) {
     console.error('[ACTIVITY_LOGGER] Error in logActivity:', error);
@@ -91,8 +89,6 @@ async function flushActivities() {
 
     if (error) {
       console.error('[ACTIVITY_LOGGER] Error batch logging activities:', error);
-    } else {
-      console.log('[ACTIVITY_LOGGER] Batch logged', toFlush.length, 'activities');
     }
   } catch (error) {
     console.error('[ACTIVITY_LOGGER] Error in flushActivities:', error);

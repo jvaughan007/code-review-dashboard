@@ -73,8 +73,6 @@ export function useActivities({
         }
 
         if (data && data.length > 0) {
-          console.log('[ACTIVITIES] Fetched', data.length, 'new activit(ies)');
-
           // Update last seen timestamp to most recent activity
           lastSeenRef.current = data[0].created_at;
 

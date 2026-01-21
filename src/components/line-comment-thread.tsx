@@ -113,14 +113,6 @@ export function LineCommentThread({
           line_content: lineInfo.lineContent,
         };
 
-        // Debug logging for comment insert
-        console.log("[LineCommentThread] Inserting comment:", {
-          line_number: insertPayload.line_number,
-          line_type: insertPayload.line_type,
-          file_path: insertPayload.file_path,
-          body_length: body.length,
-        });
-
         const { data, error } = await supabase
           .from("comments")
           .insert(insertPayload)
@@ -128,10 +120,6 @@ export function LineCommentThread({
           .single();
 
         if (error) {
-          console.error("[LineCommentThread] Insert failed:", {
-            error,
-            payload: insertPayload,
-          });
           markError(tempId, true);
           throw error;
         }
