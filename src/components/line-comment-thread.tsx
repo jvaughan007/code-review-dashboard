@@ -100,24 +100,38 @@ export function LineCommentThread({
         addComment(prId, optimisticComment);
 
         // Save to database
+        const insertPayload = {
+          pr_id: prId,
+          user_id: user.user.id,
+          username: optimisticComment.username,
+          avatar_url: optimisticComment.avatar_url,
+          body,
+          parent_comment_id: parentCommentId,
+          file_path: lineInfo.filePath,
+          line_number: lineInfo.lineNumber,
+          line_type: lineInfo.lineType,
+          line_content: lineInfo.lineContent,
+        };
+
+        // Debug logging for comment insert
+        console.log("[LineCommentThread] Inserting comment:", {
+          line_number: insertPayload.line_number,
+          line_type: insertPayload.line_type,
+          file_path: insertPayload.file_path,
+          body_length: body.length,
+        });
+
         const { data, error } = await supabase
           .from("comments")
-          .insert({
-            pr_id: prId,
-            user_id: user.user.id,
-            username: optimisticComment.username,
-            avatar_url: optimisticComment.avatar_url,
-            body,
-            parent_comment_id: parentCommentId,
-            file_path: lineInfo.filePath,
-            line_number: lineInfo.lineNumber,
-            line_type: lineInfo.lineType,
-            line_content: lineInfo.lineContent,
-          })
+          .insert(insertPayload)
           .select()
           .single();
 
         if (error) {
+          console.error("[LineCommentThread] Insert failed:", {
+            error,
+            payload: insertPayload,
+          });
           markError(tempId, true);
           throw error;
         }

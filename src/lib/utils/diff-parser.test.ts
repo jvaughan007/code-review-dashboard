@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseDiffPatch, countDiffLines, shouldVirtualize } from "./diff-parser";
+import { parseDiffPatch, countDiffLines, shouldVirtualize, getNavigableLineNumbers, getLineInfo } from "./diff-parser";
 
 describe("diff-parser", () => {
   describe("parseDiffPatch", () => {
@@ -113,6 +113,107 @@ line3`;
       const patch = Array(50).fill("line").join("\n");
       expect(shouldVirtualize(patch, 40)).toBe(true);
       expect(shouldVirtualize(patch, 60)).toBe(false);
+    });
+  });
+
+  describe("getNavigableLineNumbers", () => {
+    it("should return newLineNumbers for additions and context lines", () => {
+      const patch = `@@ -1,3 +1,4 @@
+ line 1
++added line
+ line 2
+ line 3`;
+
+      const lineNumbers = getNavigableLineNumbers(patch);
+
+      // Should include: context line 1 (newLineNumber=1), addition (newLineNumber=2),
+      // context line 2 (newLineNumber=3), context line 3 (newLineNumber=4)
+      expect(lineNumbers).toEqual([1, 2, 3, 4]);
+    });
+
+    it("should not include deletion lines (they have no newLineNumber)", () => {
+      const patch = `@@ -1,4 +1,2 @@
+ line 1
+-deleted line 1
+-deleted line 2
+ line 2`;
+
+      const lineNumbers = getNavigableLineNumbers(patch);
+
+      // Deletions have newLineNumber=null, so only context lines included
+      // context line 1 (newLineNumber=1), context line 2 (newLineNumber=2)
+      expect(lineNumbers).toEqual([1, 2]);
+    });
+
+    it("should handle hunk starting at non-1 line number", () => {
+      const patch = `@@ -10,3 +15,4 @@
+ line at 15
++added at 16
+ line at 17
+ line at 18`;
+
+      const lineNumbers = getNavigableLineNumbers(patch);
+
+      expect(lineNumbers).toEqual([15, 16, 17, 18]);
+    });
+
+    it("should return empty array for empty patch", () => {
+      expect(getNavigableLineNumbers("")).toEqual([]);
+    });
+  });
+
+  describe("getLineInfo", () => {
+    it("should return line info for a valid line number", () => {
+      const patch = `@@ -1,3 +1,4 @@
+ line 1
++added line
+ line 2
+ line 3`;
+
+      const info = getLineInfo(patch, 2);
+
+      expect(info).toEqual({
+        content: "added line",
+        type: "addition",
+      });
+    });
+
+    it("should return context line info", () => {
+      const patch = `@@ -1,2 +1,2 @@
+ context line
+ another context`;
+
+      const info = getLineInfo(patch, 1);
+
+      expect(info).toEqual({
+        content: "context line",
+        type: "context",
+      });
+    });
+
+    it("should return null for non-existent line number", () => {
+      const patch = `@@ -1,2 +1,2 @@
+ line 1
+ line 2`;
+
+      const info = getLineInfo(patch, 999);
+
+      expect(info).toBeNull();
+    });
+
+    it("should find deletion lines by oldLineNumber", () => {
+      const patch = `@@ -1,3 +1,2 @@
+ line 1
+-deleted line
+ line 2`;
+
+      // Deletion is at oldLineNumber=2
+      const info = getLineInfo(patch, 2);
+
+      expect(info).toEqual({
+        content: "deleted line",
+        type: "deletion",
+      });
     });
   });
 });
